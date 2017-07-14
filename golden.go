@@ -2,7 +2,7 @@ package hambidgetree
 
 import "math"
 
-var GoldenRatio = math.Sqrt(5)/2 + 0.5
+var GoldenRatio = math.Sqrt(5)/2 + 0.5 // Equivalent to math.Phi
 var SquareRatio = 1.0
 var RootFiveRatio = math.Sqrt(5)
 
