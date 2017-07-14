@@ -10,7 +10,7 @@ type Ratios interface {
 	At(index int) float64
 }
 
-type HambidgeRatios interface {
+type TreeRatios interface {
 	Complements() Complements // Returns complements
 	Ratios() Ratios           // Returns ratios sorted ascending
 }
@@ -36,6 +36,26 @@ func (ratios *ratioSubset) Len() int {
 
 func (ratios *ratioSubset) At(index int) float64 {
 	return ratios.ratios.At(ratios.indexes[index])
+}
+
+type treeRatios struct {
+	ratios      Ratios
+	complements Complements
+}
+
+func NewTreeRatios(ratios Ratios, epsilon float64) TreeRatios {
+	return &treeRatios{
+		ratios:      ratios,
+		complements: NewComplements(ratios, epsilon),
+	}
+}
+
+func (ratios *treeRatios) Ratios() Ratios {
+	return ratios.ratios
+}
+
+func (ratios *treeRatios) Complements() Complements {
+	return ratios.complements
 }
 
 func NewRatios(values []float64) Ratios {
