@@ -97,7 +97,11 @@ func NewComplements(ratios Ratios, epsilon float64) Complements {
 			if ratios.At(j) < ratio-epsilon {
 				for k := j; k < n; k++ {
 					if math.Abs(ratio-ratios.At(j)-ratios.At(k)) < epsilon {
-						complements[i] = append(complements[i], NewVerticalSplit(j, k))
+						left, right := j, k
+						if left > right {
+							left, right = right, left
+						}
+						complements[i] = append(complements[i], NewVerticalSplit(left, right))
 						break
 					}
 				}
@@ -124,7 +128,11 @@ func NewComplements(ratios Ratios, epsilon float64) Complements {
 							panic("inverse ratio lookup failed " + strconv.Itoa(j) + ":" + strconv.Itoa(invJ) + ", " + strconv.Itoa(k) + ":" + strconv.Itoa(invK))
 						}
 
-						complements[i] = append(complements[i], NewHorizontalSplit(invJ, invK))
+						top, bot := invJ, invK
+						if top > bot {
+							top, bot = bot, top
+						}
+						complements[i] = append(complements[i], NewHorizontalSplit(top, bot))
 						break
 					}
 				}
