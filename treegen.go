@@ -11,6 +11,41 @@ type TreeGenerator interface {
 	Generate() (*HambidgeTree, error)
 }
 
+/*
+type GridTreeGenerator struct {
+	Columns        int
+	Rows           int
+	ContainerRatio float64
+}
+
+func NewGridTreeGenerator(cols, rows int, containerRatio float64) *GridTreeGenerator {
+	return &GridTreeGenerator{
+		Columns:        cols,
+		Rows:           rows,
+		ContainerRatio: containerRatio,
+	}
+}
+
+func (gen *GridTreeGenerator) Name() string {
+	return "Grid"
+}
+
+func (gen *GridTreeGenerator) Description() string {
+	return "This algorithm simply splits the given space according to an evenly space grid."
+}
+
+func (gen *GridTreeGenerator) Parameters() map[string]interface{} {
+	return map[string]interface{}{
+		"Columns":        gen.Columns,
+		"Rows":           gen.Rows,
+		"ContainerRatio": ContainerRatio,
+	}
+}
+
+func (gen *GridTreeGenerator) Generate() (*HambidgeTree, error) {
+
+}*/
+
 type RandomBasicTreeGenerator struct {
 	Ratios         TreeRatios
 	ContainerRatio float64
