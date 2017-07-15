@@ -7,6 +7,27 @@ type HambidgeTree struct {
 	root       *HambidgeTreeNode
 }
 
+/*
+type NodesByLex []*HambidgeTreeNode
+
+func (nodes NodesByLex) Len() int      { return len(nodes) }
+func (nodes NodesByLex) Swap(i, j int) { nodes[i], nodes[j] = nodes[j], nodes[i] }
+func (nodes NodesByLex) Less(i, j int) bool {
+	if nodes[i].Y() < nodes[j].Y() {
+		return true
+	}
+
+	if nodes[j].Y() < nodes[i].Y() {
+		return false
+	}
+
+	if nodes[i].X() < nodes[j].X() {
+		return true
+	}
+
+	return false
+}
+*/
 func NewHambidgeTree(ratios TreeRatios, ratioIndex int) *HambidgeTree {
 	if ratioIndex < 0 || ratioIndex >= ratios.Ratios().Len() {
 		panic("Invalid ratio index")
@@ -23,13 +44,22 @@ func NewHambidgeTree(ratios TreeRatios, ratioIndex int) *HambidgeTree {
 }
 
 func (tree *HambidgeTree) Leaves() []*HambidgeTreeNode {
-	// TODO:
-	return nil
+	return tree.FilterNodes(func(node *HambidgeTreeNode) bool {
+		return node.IsLeaf()
+	})
 }
 
-func (tree *HambidgeTree) SortLeaves() {
-	// TODO:
+func (tree *HambidgeTree) FilterNodes(filter func(*HambidgeTreeNode) bool) []*HambidgeTreeNode {
+	var nodes []*HambidgeTreeNode
+	it := NewHambidgeTreeNodeIterator(tree.root)
+	for it.HasNext() {
+		node := it.Next()
+		if filter(node) {
+			nodes = append(nodes, node)
+		}
+	}
 
+	return nodes
 }
 
 func (tree *HambidgeTree) Ratio() float64 {
@@ -38,6 +68,12 @@ func (tree *HambidgeTree) Ratio() float64 {
 
 type HambidgeTreeNodeIterator struct {
 	nodes []*HambidgeTreeNode
+}
+
+func NewHambidgeTreeNodeIterator(root *HambidgeTreeNode) *HambidgeTreeNodeIterator {
+	return &HambidgeTreeNodeIterator{
+		nodes: []*HambidgeTreeNode{root},
+	}
 }
 
 func (it *HambidgeTreeNodeIterator) HasNext() bool {
@@ -59,13 +95,14 @@ func (it *HambidgeTreeNodeIterator) Next() *HambidgeTreeNode {
 	return node
 }
 
+/*
 type HambidgeTreeNodeStats struct {
 	width  float64
 	height float64
 	x      float64
 	y      float64
 }
-
+*/
 type HambidgeTreeNode struct {
 	tree   *HambidgeTree
 	split  Split
@@ -74,7 +111,7 @@ type HambidgeTreeNode struct {
 	right  *HambidgeTreeNode
 
 	// Cached information
-	cachedStats HambidgeTreeNodeStats
+	//cachedStats HambidgeTreeNodeStats
 }
 
 func NewHambidgeTreeNode(tree *HambidgeTree, parent *HambidgeTreeNode) *HambidgeTreeNode {
@@ -83,8 +120,8 @@ func NewHambidgeTreeNode(tree *HambidgeTree, parent *HambidgeTreeNode) *Hambidge
 		parent: parent,
 	}
 
-	node.cachedStats.x = -1.0
-	node.cachedStats.y = -1.0
+	//node.cachedStats.x = -1.0
+	//node.cachedStats.y = -1.0
 	return node
 }
 
@@ -127,6 +164,8 @@ func (node *HambidgeTreeNode) RatioIndex() int {
 func (node *HambidgeTreeNode) Ratio() float64 {
 	return node.tree.ratios.Ratios().At(node.RatioIndex())
 }
+
+/*
 
 func (node *HambidgeTreeNode) Area() float64 {
 	return node.Width() * node.Height()
@@ -195,3 +234,4 @@ func (node *HambidgeTreeNode) Y() float64 {
 
 	return node.cachedStats.y
 }
+*/

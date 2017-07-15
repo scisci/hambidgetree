@@ -3,11 +3,26 @@ package hambidgetree
 import "math"
 import "sort"
 import "strconv"
+import "bytes"
 
 type Complements [][]Split
 type Ratios interface {
 	Len() int
 	At(index int) float64
+}
+
+func RatiosParameterString(ratios Ratios) string {
+	n := ratios.Len()
+
+	buf := bytes.NewBuffer(nil)
+	buf.WriteString("[")
+	for i := 0; i < n; i++ {
+		if i > 0 {
+			buf.WriteString(", ")
+		}
+		buf.WriteString(strconv.FormatFloat(ratios.At(i), 'f', -1, 64))
+	}
+	return buf.String()
 }
 
 type TreeRatios interface {
@@ -41,6 +56,27 @@ func (ratios *ratioSubset) At(index int) float64 {
 type treeRatios struct {
 	ratios      Ratios
 	complements Complements
+}
+
+// Given a sorted list of values, the epsilon value is some function of the
+// minimum distance between two of the values. Technically we should only have
+// to divide this by 2, but we do it by 1000 just for fun.
+func CalculateRatiosEpsilon(ratios Ratios) float64 {
+	minDist := math.MaxFloat64
+	n := ratios.Len()
+
+	if n > 1 {
+		lastVal := ratios.At(0)
+		for i := 1; i < n; i++ {
+			val := ratios.At(i)
+			if val-lastVal < minDist {
+				minDist = val - lastVal
+			}
+			lastVal = val
+		}
+	}
+
+	return minDist / 1000.0
 }
 
 func NewTreeRatios(ratios Ratios, epsilon float64) TreeRatios {
