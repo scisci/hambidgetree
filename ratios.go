@@ -6,6 +6,7 @@ import "strconv"
 import "bytes"
 
 type Complements [][]Split
+
 type Ratios interface {
 	Len() int
 	At(index int) float64
@@ -80,6 +81,23 @@ func CalculateRatiosEpsilon(ratios Ratios) float64 {
 }
 
 func NewTreeRatios(ratios Ratios, epsilon float64) TreeRatios {
+	// Make sure each ratio has an inverse
+	var ratiosToAdd []float64
+
+	for i := 0; i < ratios.Len(); i++ {
+		if FindInverseRatioIndex(ratios, i, epsilon) == -1 {
+			ratiosToAdd = append(ratiosToAdd, 1/ratios.At(i))
+		}
+	}
+
+	if len(ratiosToAdd) > 0 {
+		for i := 0; i < ratios.Len(); i++ {
+			ratiosToAdd = append(ratiosToAdd, ratios.At(i))
+		}
+
+		ratios = NewRatios(ratiosToAdd)
+	}
+
 	return &treeRatios{
 		ratios:      ratios,
 		complements: NewComplements(ratios, epsilon),
