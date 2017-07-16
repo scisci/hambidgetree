@@ -4,10 +4,17 @@ import "math/rand"
 import "strconv"
 import "errors"
 
+type ParameterFormatType int
+
+const (
+	ParameterFormatTypeVerbose ParameterFormatType = 0
+	ParameterFormatTypeConcise ParameterFormatType = 1
+)
+
 type TreeGenerator interface {
 	Name() string
 	Description() string
-	Parameters() map[string]interface{}
+	Parameters(f ParameterFormatType) map[string]interface{}
 	Generate() (*Tree, error)
 }
 
@@ -35,7 +42,13 @@ func (gen *RandomBasicTreeGenerator) Description() string {
 	return "This algorithm can be set to generate a given number of leaves. It begins with a single leaf of a given ratio. Until it reaches the desired number of leaves, it selects a leaf at random and splits it."
 }
 
-func (gen *RandomBasicTreeGenerator) Parameters() map[string]interface{} {
+func (gen *RandomBasicTreeGenerator) Parameters(f ParameterFormatType) map[string]interface{} {
+	if f == ParameterFormatTypeConcise {
+		return map[string]interface{}{
+			"Random Seed": gen.Seed,
+		}
+	}
+
 	return map[string]interface{}{
 		"Ratios":           RatiosParameterString(gen.Ratios.Ratios()),
 		"Container Ratio":  strconv.FormatFloat(gen.ContainerRatio, 'f', 4, 64),
