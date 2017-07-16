@@ -4,7 +4,6 @@ import "strconv"
 
 type SplitType int
 
-const SplitTypeNone SplitType = 0
 const SplitTypeHorizontal SplitType = 1
 const SplitTypeVertical SplitType = 2
 
@@ -13,8 +12,8 @@ type Split interface {
 	RightIndex() int
 	IsHorizontal() bool
 	IsVertical() bool
-	IsValid() bool
 	String() string
+	Inverse() Split
 }
 
 type split struct {
@@ -25,6 +24,14 @@ type split struct {
 
 func (s *split) Type() SplitType {
 	return s.typ
+}
+
+func (s *split) Inverse() Split {
+	return &split{
+		typ:        s.typ,
+		leftIndex:  s.rightIndex,
+		rightIndex: s.leftIndex,
+	}
 }
 
 func (s *split) LeftIndex() int {
@@ -41,12 +48,6 @@ func (s *split) IsHorizontal() bool {
 
 func (s *split) IsVertical() bool {
 	return s.typ == SplitTypeVertical
-}
-
-func (s *split) IsValid() bool {
-	return s.typ != SplitTypeNone &&
-		s.leftIndex > 0 &&
-		s.rightIndex > 0
 }
 
 func (s *split) String() string {

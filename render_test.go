@@ -2,11 +2,11 @@ package hambidgetree
 
 import "testing"
 
-func generateGridTree(levels int) *HambidgeTree {
+func generateGridTree(levels int) *Tree {
 	ratios := NewRatios([]float64{0.5, 1.0, 2.0})
 	treeRatios := NewTreeRatios(ratios, 0.0000001)
 
-	tree := NewHambidgeTree(treeRatios, 1)
+	tree := NewTree(treeRatios, 1)
 
 	for i := 0; i < levels; i++ {
 		leaves := tree.Leaves()
@@ -26,14 +26,23 @@ func generateGridTree(levels int) *HambidgeTree {
 }
 
 var strokeTests = []struct {
-	Tree  *HambidgeTree
+	Tree  *Tree
 	Calls []GraphicsContextCall
 }{
 	{
 		Tree: generateGridTree(1),
 		Calls: []GraphicsContextCall{
 			&GraphicsContextLine{0.5, 0.0, 0.5, 1.0},
-			&GraphicsContextRect{0.0, 0.0, 1.0, 1.1},
+			&GraphicsContextRect{0.0, 0.0, 1.0, 1.0},
+		},
+	},
+	{
+		Tree: generateGridTree(2),
+		Calls: []GraphicsContextCall{
+			&GraphicsContextLine{0.5, 0.0, 0.5, 1.0},
+			&GraphicsContextLine{0.0, 0.5, 0.5, 0.5},
+			&GraphicsContextLine{0.5, 0.5, 1.0, 0.5},
+			&GraphicsContextRect{0.0, 0.0, 1.0, 1.0},
 		},
 	},
 }

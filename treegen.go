@@ -8,43 +8,8 @@ type TreeGenerator interface {
 	Name() string
 	Description() string
 	Parameters() map[string]interface{}
-	Generate() (*HambidgeTree, error)
+	Generate() (*Tree, error)
 }
-
-/*
-type GridTreeGenerator struct {
-	Columns        int
-	Rows           int
-	ContainerRatio float64
-}
-
-func NewGridTreeGenerator(cols, rows int, containerRatio float64) *GridTreeGenerator {
-	return &GridTreeGenerator{
-		Columns:        cols,
-		Rows:           rows,
-		ContainerRatio: containerRatio,
-	}
-}
-
-func (gen *GridTreeGenerator) Name() string {
-	return "Grid"
-}
-
-func (gen *GridTreeGenerator) Description() string {
-	return "This algorithm simply splits the given space according to an evenly space grid."
-}
-
-func (gen *GridTreeGenerator) Parameters() map[string]interface{} {
-	return map[string]interface{}{
-		"Columns":        gen.Columns,
-		"Rows":           gen.Rows,
-		"ContainerRatio": ContainerRatio,
-	}
-}
-
-func (gen *GridTreeGenerator) Generate() (*HambidgeTree, error) {
-
-}*/
 
 type RandomBasicTreeGenerator struct {
 	Ratios         TreeRatios
@@ -79,7 +44,7 @@ func (gen *RandomBasicTreeGenerator) Parameters() map[string]interface{} {
 	}
 }
 
-func (gen *RandomBasicTreeGenerator) Generate() (*HambidgeTree, error) {
+func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 	rand.Seed(gen.Seed)
 
 	epsilon := CalculateRatiosEpsilon(gen.Ratios.Ratios())
@@ -91,7 +56,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*HambidgeTree, error) {
 	complements := gen.Ratios.Complements()
 
 	// Generate the container
-	tree := NewHambidgeTree(gen.Ratios, containerRatioIndex)
+	tree := NewTree(gen.Ratios, containerRatioIndex)
 
 	leafCount := 1
 
@@ -101,7 +66,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*HambidgeTree, error) {
 		}
 
 		// Collect all splittable leaves
-		splittableLeaves := tree.FilterNodes(func(node *HambidgeTreeNode) bool {
+		splittableLeaves := tree.FilterNodes(func(node *Node) bool {
 			return node.IsLeaf() && len(complements[node.RatioIndex()]) > 0
 		})
 
@@ -117,6 +82,12 @@ func (gen *RandomBasicTreeGenerator) Generate() (*HambidgeTree, error) {
 		// Choose a random split
 		splitIndex := rand.Intn(len(splits))
 		split := splits[splitIndex]
+
+		// Randomly invert the split (by default complements always have the smaller)
+		// ratio on the left, but we want it to be evenly distributed.
+		if rand.Int()&1 == 0 {
+			split = split.Inverse()
+		}
 
 		splittableLeaves[leafIndex].Divide(split)
 		leafCount += 1

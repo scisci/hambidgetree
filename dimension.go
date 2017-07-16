@@ -13,7 +13,7 @@ func (dim Dimension) Height() float64 {
 }
 
 type DimensionalNode struct {
-	*HambidgeTreeNode
+	*Node
 	Dimension
 }
 
@@ -21,7 +21,7 @@ type DimensionalIterator struct {
 	dimensions []*DimensionalNode
 }
 
-func NewDimensionalIterator(root *HambidgeTreeNode) *DimensionalIterator {
+func NewDimensionalIterator(root *Node) *DimensionalIterator {
 	return &DimensionalIterator{
 		dimensions: []*DimensionalNode{
 			&DimensionalNode{
@@ -48,8 +48,8 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 
 	if !node.IsLeaf() {
 		ratio := node.Ratio()
-		left := node.HambidgeTreeNode.left
-		right := node.HambidgeTreeNode.right
+		left := node.Node.left
+		right := node.Node.right
 
 		if node.Split().IsHorizontal() {
 			leftHeight := dimension.Height() * ratio / left.Ratio()

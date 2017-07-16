@@ -1,6 +1,7 @@
 package hambidgetree
 
 import "math"
+import "strconv"
 
 const RenderEpsilon = 0.0000001
 
@@ -27,7 +28,11 @@ func (m *GraphicsContextLine) Equals(other GraphicsContextCall) bool {
 }
 
 func (m *GraphicsContextLine) String() string {
-	return "Line" // todo
+	return "Line{" +
+		strconv.FormatFloat(m.x1, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.y1, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.x2, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.y2, 'f', -1, 64) + "}"
 }
 
 type GraphicsContextRect struct {
@@ -39,7 +44,11 @@ func (m *GraphicsContextRect) Name() string {
 }
 
 func (m *GraphicsContextRect) String() string {
-	return "Rect" // todo
+	return "Rect{" +
+		strconv.FormatFloat(m.x, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.y, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.width, 'f', -1, 64) + ", " +
+		strconv.FormatFloat(m.height, 'f', -1, 64) + "}"
 }
 
 func (m *GraphicsContextRect) Equals(other GraphicsContextCall) bool {
@@ -82,7 +91,7 @@ func NewTreeStrokeRenderer() *TreeStrokeRenderer {
 	return &TreeStrokeRenderer{}
 }
 
-func (renderer *TreeStrokeRenderer) Render(tree *HambidgeTree, gc GraphicsContext) {
+func (renderer *TreeStrokeRenderer) Render(tree *Tree, gc GraphicsContext) {
 	it := NewDimensionalIterator(tree.root)
 
 	var container *DimensionalNode
@@ -96,10 +105,10 @@ func (renderer *TreeStrokeRenderer) Render(tree *HambidgeTree, gc GraphicsContex
 		// Draw the stroke
 		if !node.IsLeaf() {
 			if node.Split().IsHorizontal() {
-				y := node.Dimension.top + node.Dimension.Height()*node.HambidgeTreeNode.left.Ratio()
+				y := node.Dimension.top + node.Dimension.Height()*node.Node.left.Ratio()
 				gc.Line(node.Dimension.left, y, node.Dimension.right, y)
 			} else {
-				x := node.Dimension.left + node.Dimension.Width()*node.HambidgeTreeNode.left.Ratio()
+				x := node.Dimension.left + node.Dimension.Width()*node.Node.left.Ratio()
 				gc.Line(x, node.Dimension.top, x, node.Dimension.bottom)
 			}
 		}
