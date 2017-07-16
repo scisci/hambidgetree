@@ -3,7 +3,7 @@ package hambidgetree
 import "testing"
 
 func generateGridTree(levels int) *Tree {
-	ratios := NewRatios([]float64{0.5, 1.0, 2.0})
+	ratios := NewRatios([]float64{0.5, 1.0})
 	treeRatios := NewTreeRatios(ratios, 0.0000001)
 
 	tree := NewTree(treeRatios, 1)
@@ -15,7 +15,7 @@ func generateGridTree(levels int) *Tree {
 			if i&1 == 0 {
 				split = NewVerticalSplit(0, 0)
 			} else {
-				split = NewHorizontalSplit(0, 0)
+				split = NewHorizontalSplit(1, 1)
 			}
 
 			leaf.Divide(split)
@@ -50,7 +50,7 @@ var strokeTests = []struct {
 func TestTreeStrokeRenderer(t *testing.T) {
 	for i, test := range strokeTests {
 		// Generates a 4x4 grid
-		renderer := NewTreeStrokeRenderer()
+		renderer := NewTreeStrokeRenderer(0, 0, 1)
 		gc := NewGraphicsContextRecorder()
 
 		renderer.Render(test.Tree, gc)

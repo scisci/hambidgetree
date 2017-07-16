@@ -21,12 +21,12 @@ type DimensionalIterator struct {
 	dimensions []*DimensionalNode
 }
 
-func NewDimensionalIterator(root *Node) *DimensionalIterator {
+func NewDimensionalIterator(root *Node, offsetX, offsetY, scale float64) *DimensionalIterator {
 	return &DimensionalIterator{
 		dimensions: []*DimensionalNode{
 			&DimensionalNode{
 				root,
-				Dimension{0, 0, root.Ratio(), 1},
+				Dimension{offsetX, offsetY, root.Ratio() * scale, 1 * scale},
 			},
 		},
 	}

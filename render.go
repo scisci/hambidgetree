@@ -85,14 +85,27 @@ func (gc *GraphicsContextRecorder) AddCall(call GraphicsContextCall) {
 }
 
 type TreeStrokeRenderer struct {
+	offsetX float64
+	offsetY float64
+	scale   float64
+	snap    bool
 }
 
-func NewTreeStrokeRenderer() *TreeStrokeRenderer {
-	return &TreeStrokeRenderer{}
+func NewTreeStrokeRenderer(offsetX, offsetY, scale float64) *TreeStrokeRenderer {
+	return &TreeStrokeRenderer{
+		offsetX: offsetX,
+		offsetY: offsetY,
+		scale:   scale,
+		snap:    false,
+	}
+}
+
+func (renderer *TreeStrokeRenderer) Snap(snap bool) {
+	renderer.snap = snap
 }
 
 func (renderer *TreeStrokeRenderer) Render(tree *Tree, gc GraphicsContext) {
-	it := NewDimensionalIterator(tree.root)
+	it := NewDimensionalIterator(tree.root, renderer.offsetX, renderer.offsetY, renderer.scale)
 
 	var container *DimensionalNode
 
@@ -105,16 +118,23 @@ func (renderer *TreeStrokeRenderer) Render(tree *Tree, gc GraphicsContext) {
 		// Draw the stroke
 		if !node.IsLeaf() {
 			if node.Split().IsHorizontal() {
-				y := node.Dimension.top + node.Dimension.Height()*node.Node.left.Ratio()
+				y := node.Dimension.top + node.Dimension.Height()*node.Ratio()/node.Node.left.Ratio()
+				if renderer.snap {
+					y = math.Floor(y + 0.5)
+				}
+
 				gc.Line(node.Dimension.left, y, node.Dimension.right, y)
 			} else {
-				x := node.Dimension.left + node.Dimension.Width()*node.Node.left.Ratio()
+				x := node.Dimension.left + node.Dimension.Width()*node.Node.left.Ratio()/node.Ratio()
+				if renderer.snap {
+					x = math.Floor(x + 0.5)
+				}
 				gc.Line(x, node.Dimension.top, x, node.Dimension.bottom)
 			}
 		}
 	}
 
 	// Finally draw the rectangle
-	gc.Rect(0, 0, container.Width(), container.Height())
+	gc.Rect(container.Dimension.left, container.Dimension.top, container.Width(), container.Height())
 
 }
