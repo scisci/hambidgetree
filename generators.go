@@ -32,13 +32,13 @@ func (gen *RandomBasicTreeGenerator) Name() string {
 }
 
 func (gen *RandomBasicTreeGenerator) Description() string {
-	return "This algorithm begins with a single leaf of a given ratio. Until it reaches the desired number of leaves, it selects a leaf at random and splits it."
+	return "This algorithm can be set to generate a given number of leaves. It begins with a single leaf of a given ratio. Until it reaches the desired number of leaves, it selects a leaf at random and splits it."
 }
 
 func (gen *RandomBasicTreeGenerator) Parameters() map[string]interface{} {
 	return map[string]interface{}{
 		"Ratios":           RatiosParameterString(gen.Ratios.Ratios()),
-		"ContainerRatio":   strconv.FormatFloat(gen.ContainerRatio, 'f', 4, 64),
+		"Container Ratio":  strconv.FormatFloat(gen.ContainerRatio, 'f', 4, 64),
 		"Number of Leaves": gen.NumLeaves,
 		"Random Seed":      gen.Seed,
 	}

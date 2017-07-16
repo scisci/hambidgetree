@@ -21,8 +21,9 @@ func RatiosParameterString(ratios Ratios) string {
 		if i > 0 {
 			buf.WriteString(", ")
 		}
-		buf.WriteString(strconv.FormatFloat(ratios.At(i), 'f', -1, 64))
+		buf.WriteString(strconv.FormatFloat(ratios.At(i), 'f', 4, 64))
 	}
+	buf.WriteString("]")
 	return buf.String()
 }
 

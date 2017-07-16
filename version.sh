@@ -5,5 +5,5 @@ cat << EOF > version.go
 package hambidgetree
 
 //go:generate bash ./version.sh
-var version = "$version"
+var Version = "$version"
 EOF

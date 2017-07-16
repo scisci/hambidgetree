@@ -1,4 +1,4 @@
 package hambidgetree
 
 //go:generate bash ./version.sh
-var version = "v0.0.0"
+var Version = "v0.0.1-0-g1f90be1"
