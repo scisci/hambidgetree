@@ -45,7 +45,8 @@ func (gen *RandomBasicTreeGenerator) Description() string {
 func (gen *RandomBasicTreeGenerator) Parameters(f ParameterFormatType) map[string]interface{} {
 	if f == ParameterFormatTypeConcise {
 		return map[string]interface{}{
-			"Random Seed": gen.Seed,
+			"# Leaves": gen.NumLeaves,
+			"Seed":     gen.Seed,
 		}
 	}
 
