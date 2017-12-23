@@ -52,11 +52,13 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 	// Get the dimension list
 	nodeDimMap := NewNodeDimensionMap(tree.root, 0, 0, 1.0)
 
+	var err error
+
 	// Naive approach, just compare each leaf to each other leaf, could do better
 	// with some sorting
 	for count := 0; count < attributor.MaxMarks; count++ {
 		// Find all the remaining leaves that still have neighbors
-		leaves, err := getNeighbors(leaves, nodeDimMap, epsilon)
+		leaves, err = getNeighbors(leaves, nodeDimMap, epsilon)
 		if err != nil {
 			return err
 		}
