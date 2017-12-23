@@ -76,7 +76,8 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 }
 
 func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([]*Node, error) {
-	for i := 0; i < len(leaves); {
+	var candidates []*Node
+	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
 		dim, err := nodeDimMap.Dimension(leaves[i])
 		if err != nil {
@@ -87,7 +88,6 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 			if j == i {
 				continue
 			}
-
 			dim2, err := nodeDimMap.Dimension(leaves[j])
 			if err != nil {
 				return nil, err
@@ -100,12 +100,10 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 			}
 		}
 
-		if !hasNeighbor {
-			leaves = append(leaves[:i], leaves[i+1:]...) // Remove the candidate, keep i
-		} else {
-			i++ // Has neighbor so move on
+		if hasNeighbor {
+			candidates = append(candidates, leaves[i]) // Remove the candidate, keep i
 		}
 	}
 
-	return leaves, nil
+	return candidates, nil
 }
