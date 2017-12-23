@@ -21,6 +21,10 @@ func NewNode(tree *Tree, parent *Node) *Node {
 	return node
 }
 
+func (node *Node) ID() NodeID {
+	return node.id
+}
+
 func (node *Node) IsLeaf() bool {
 	return node.split == nil
 }
