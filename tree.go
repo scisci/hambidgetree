@@ -1,6 +1,7 @@
 package hambidgetree
 
 type Tree struct {
+	uniqueId   NodeID
 	ratios     TreeRatios
 	ratioIndex int
 	scale      float64
@@ -13,6 +14,7 @@ func NewTree(ratios TreeRatios, ratioIndex int) *Tree {
 	}
 
 	tree := &Tree{
+		uniqueId:   0,
 		ratios:     ratios,
 		ratioIndex: ratioIndex,
 		scale:      1.0,
@@ -22,10 +24,20 @@ func NewTree(ratios TreeRatios, ratioIndex int) *Tree {
 	return tree
 }
 
+func (tree *Tree) nextNodeId() NodeID {
+	id := tree.uniqueId
+	tree.uniqueId = tree.uniqueId + 1
+	return id
+}
+
 func (tree *Tree) Leaves() []*Node {
 	return tree.FilterNodes(func(node *Node) bool {
 		return node.IsLeaf()
 	})
+}
+
+func (tree *Tree) Root() *Node {
+	return tree.root
 }
 
 func (tree *Tree) FilterNodes(filter func(*Node) bool) []*Node {

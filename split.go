@@ -67,7 +67,8 @@ func (s *split) String() string {
 	return str
 }
 
-// indices are 0 based
+// Index arguments are 0 based, but internally we start at 1. This allows the
+// default value of the interface to be obviously invalid.
 func NewSplit(typ SplitType, leftIndex, rightIndex int) Split {
 	return &split{
 		typ:        typ,

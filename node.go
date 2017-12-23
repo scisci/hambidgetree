@@ -1,36 +1,10 @@
 package hambidgetree
 
-type NodeIterator struct {
-	nodes []*Node
-}
-
-func NewNodeIterator(root *Node) *NodeIterator {
-	return &NodeIterator{
-		nodes: []*Node{root},
-	}
-}
-
-func (it *NodeIterator) HasNext() bool {
-	return len(it.nodes) > 0
-}
-
-func (it *NodeIterator) Next() *Node {
-	if !it.HasNext() {
-		return nil
-	}
-
-	node := it.nodes[len(it.nodes)-1]
-	it.nodes = it.nodes[:len(it.nodes)-1]
-
-	if !node.IsLeaf() {
-		it.nodes = append(it.nodes, node.right, node.left)
-	}
-
-	return node
-}
+type NodeID int64
 
 type Node struct {
 	tree   *Tree
+	id     NodeID
 	split  Split
 	parent *Node
 	left   *Node
@@ -39,6 +13,7 @@ type Node struct {
 
 func NewNode(tree *Tree, parent *Node) *Node {
 	node := &Node{
+		id:     tree.nextNodeId(),
 		tree:   tree,
 		parent: parent,
 	}
@@ -59,6 +34,14 @@ func (node *Node) Divide(split Split) {
 	node.split = split
 	node.left = NewNode(node.tree, node)
 	node.right = NewNode(node.tree, node)
+}
+
+func (node *Node) Left() *Node {
+	return node.left
+}
+
+func (node *Node) Right() *Node {
+	return node.right
 }
 
 func (node *Node) Split() Split {
