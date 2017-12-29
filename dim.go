@@ -48,7 +48,10 @@ func (dim *Dimension) IntersectLeft(other *Dimension, epsilon float64) Extent {
 		}
 	}
 
-	return dim.y.Intersect(other.y)
+	e := dim.y.Intersect(other.y)
+	if e.NearlyEmpty(epsilon) {
+		e.end = e.start
+	}
 }
 
 // Calculates the amount the provided dimension/rect overlaps this rect on

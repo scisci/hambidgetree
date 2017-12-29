@@ -93,8 +93,13 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 				return nil, err
 			}
 
-			if !dim.IntersectLeft(dim2, epsilon).NearlyEmpty(epsilon) ||
-				!dim.IntersectRight(dim2, epsilon).NearlyEmpty(epsilon) {
+			leftExtent := dim.IntersectLeft(dim2, epsilon)
+			rightExtent := dim.IntersectRight(dim2, epsilon)
+			if !leftExtent.Empty() {
+				fmt.Printf("Left int %v, %v, %v\n", leftExtent, dim, dim2)
+				hasNeighbor = true
+			} else if !rightExtent.Empty() {
+				fmt.Printf("Right int %v, %v, %v\n", leftExtent, dim, dim2)
 				hasNeighbor = true
 				break
 			}
