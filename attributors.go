@@ -77,6 +77,7 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 }
 
 func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([]*Node, error) {
+	fmt.Println("getNeighbors")
 	var candidates []*Node
 	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
