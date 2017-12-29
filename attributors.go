@@ -93,8 +93,8 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 				return nil, err
 			}
 
-			if !dim.IntersectLeft(dim2, epsilon).Empty() ||
-				!dim.IntersectRight(dim2, epsilon).Empty() {
+			if !dim.IntersectLeft(dim2, epsilon).NearlyEmpty(epsilon) ||
+				!dim.IntersectRight(dim2, epsilon).NearlyEmpty(epsilon) {
 				hasNeighbor = true
 				break
 			}

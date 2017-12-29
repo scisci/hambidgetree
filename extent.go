@@ -20,7 +20,11 @@ func (extent Extent) Equal(other Extent) bool {
 }
 
 func (extent Extent) Empty() bool {
-	return extent.end == extent.start
+	return extent.end <= extent.start
+}
+
+func (extent Extent) NearlyEmpty(epsilon float64) bool {
+	return extent.end-extent.start < epsilon
 }
 
 func (extent Extent) Size() float64 {
