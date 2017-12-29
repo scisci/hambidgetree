@@ -1,7 +1,8 @@
 package hambidgetree
 
 import "math/rand"
-import "fmt"
+
+//import "fmt"
 
 type TreeAttributor interface {
 	Name() string
@@ -77,7 +78,6 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 }
 
 func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([]*Node, error) {
-	fmt.Println("getNeighbors")
 	var candidates []*Node
 	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
@@ -98,10 +98,10 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 			leftExtent := dim.IntersectLeft(dim2, epsilon)
 			rightExtent := dim.IntersectRight(dim2, epsilon)
 			if !leftExtent.Empty() {
-				fmt.Printf("L/I %v, %v, %v\n", leftExtent, dim, dim2)
+				//fmt.Printf("L/I %v, %v, %v\n", leftExtent, dim, dim2)
 				hasNeighbor = true
 			} else if !rightExtent.Empty() {
-				fmt.Printf("R/I %v, %v, %v\n", rightExtent, dim, dim2)
+				//fmt.Printf("R/I %v, %v, %v\n", rightExtent, dim, dim2)
 				hasNeighbor = true
 				break
 			}
