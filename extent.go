@@ -1,6 +1,7 @@
 package hambidgetree
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -13,6 +14,10 @@ func NewExtent(start, end float64) Extent {
 		start: start,
 		end:   end,
 	}
+}
+
+func (extent Extent) String() string {
+	return fmt.Sprintf("Extent{%.2f, %.2f}", extent.start, extent.end)
 }
 
 func (extent Extent) Equal(other Extent) bool {

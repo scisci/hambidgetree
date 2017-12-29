@@ -1,5 +1,7 @@
 package hambidgetree
 
+import "fmt"
+
 type Dimension struct {
 	x Extent
 	y Extent
@@ -10,6 +12,10 @@ func NewDimension(left, top, right, bottom float64) *Dimension {
 		x: NewExtent(left, right),
 		y: NewExtent(top, bottom),
 	}
+}
+
+func (dim *Dimension) String() string {
+	return fmt.Sprintf("Dim{%.2f, %.2f, %.2f, %.2f}", dim.Left(), dim.Top(), dim.Width(), dim.Height())
 }
 
 func (dim *Dimension) Left() float64 {
@@ -52,6 +58,7 @@ func (dim *Dimension) IntersectLeft(other *Dimension, epsilon float64) Extent {
 	if e.NearlyEmpty(epsilon) {
 		e.end = e.start
 	}
+	return e
 }
 
 // Calculates the amount the provided dimension/rect overlaps this rect on
