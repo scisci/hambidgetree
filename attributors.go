@@ -52,7 +52,7 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 	leaves := tree.Leaves()
 
 	// Get the dimension list
-	nodeDimMap := NewNodeDimensionMap(tree.root, 0, 0, 1.0)
+	nodeDimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1.0)
 
 	var err error
 

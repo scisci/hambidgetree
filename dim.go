@@ -2,16 +2,45 @@ package hambidgetree
 
 import "fmt"
 
+type Axis int
+
+const AxisX = 0
+const AxisY = 1
+const AxisZ = 2
+
+type Vector struct {
+	x float64
+	y float64
+	z float64
+}
+
 type Dimension struct {
 	x Extent
 	y Extent
+	z Extent
 }
 
-func NewDimension(left, top, right, bottom float64) *Dimension {
+func NewDimension2D(left, top, right, bottom float64) *Dimension {
 	return &Dimension{
 		x: NewExtent(left, right),
 		y: NewExtent(top, bottom),
 	}
+}
+
+func NewDimension3D(left, top, front, right, bottom, back float64) *Dimension {
+	return &Dimension{
+		x: NewExtent(left, right),
+		y: NewExtent(top, bottom),
+		z: NewExtent(front, back),
+	}
+}
+
+func (dim *Dimension) Clone() *Dimension {
+	return NewDimension3D(dim.x.start, dim.y.start, dim.z.start, dim.x.end, dim.y.end, dim.z.end)
+}
+
+func (dim *Dimension) Is3D() bool {
+	return !dim.z.Empty()
 }
 
 func (dim *Dimension) String() string {
@@ -34,12 +63,48 @@ func (dim *Dimension) Bottom() float64 {
 	return dim.y.end
 }
 
+func (dim *Dimension) Front() float64 {
+	return dim.z.start
+}
+
+func (dim *Dimension) Back() float64 {
+	return dim.z.end
+}
+
 func (dim *Dimension) Width() float64 {
-	return dim.Right() - dim.Left()
+	return dim.x.Size()
 }
 
 func (dim *Dimension) Height() float64 {
-	return dim.Bottom() - dim.Top()
+	return dim.y.Size()
+}
+
+func (dim *Dimension) Depth() float64 {
+	return dim.z.Size()
+}
+
+// Insets the extent corresponding to the given axis. If its a positive value
+// the start of the axis is inset, if its a negative value the end is inset.
+func (dim *Dimension) Inset(axis Axis, distance float64) *Dimension {
+	inset := dim.Clone()
+
+	var extent *Extent
+	switch axis {
+	case AxisX:
+		extent = &inset.x
+	case AxisY:
+		extent = &inset.y
+	case AxisZ:
+		extent = &inset.z
+	}
+
+	if distance > 0 {
+		extent.start += distance
+	} else {
+		extent.end += distance
+	}
+
+	return inset
 }
 
 // Calculates the amount the provided dimension/rect overlaps this rect on

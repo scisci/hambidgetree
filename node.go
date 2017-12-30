@@ -2,6 +2,11 @@ package hambidgetree
 
 type NodeID int64
 
+type RatioPlane int
+
+const RatioPlaneXY = 1
+const RatioPlaneZY = 2
+
 type Node struct {
 	tree   *Tree
 	id     NodeID
@@ -56,17 +61,18 @@ func (node *Node) IsLeft() bool {
 	return node.parent != nil && node.parent.left == node
 }
 
+// Search up the tree looking for the last split that would affect the required
+// axis.
 func (node *Node) RatioIndex() int {
-	if node.parent != nil {
-		if node.parent.left == node {
-			return node.parent.split.LeftIndex()
-		}
-
-		return node.parent.split.RightIndex()
+	if node.parent == nil {
+		panic("Can't get ratio index this is the root!")
 	}
 
-	// No parent, must be the root
-	return node.tree.ratioIndex
+	if node.parent.left == node {
+		return node.parent.split.LeftIndex()
+	}
+
+	return node.parent.split.RightIndex()
 }
 
 func (node *Node) Ratio() float64 {

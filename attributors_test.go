@@ -27,10 +27,10 @@ func arrayContentsEqual(arr1, arr2 []*Node) bool {
 }
 
 func TestGetNeighbors(t *testing.T) {
-	tree := NewGridTree(2) // Create a tree with 4 squares
+	tree := NewGridTree2D(2) // Create a tree with 4 squares
 	leaves := tree.Leaves()
 	epsilon := 0.0000001
-	nodeDimMap := NewNodeDimensionMap(tree.root, 0, 0, 1.0)
+	nodeDimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1.0)
 	neighbors, err := getNeighbors(leaves, nodeDimMap, epsilon)
 	if err != nil {
 		t.Errorf("Error getting neighbors (%v)", err)

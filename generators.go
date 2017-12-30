@@ -23,6 +23,12 @@ type RandomBasicTreeGenerator struct {
 	ContainerRatio float64
 	NumLeaves      int
 	Seed           int64
+	Is3D           bool
+}
+
+type leafSplits struct {
+	leaf   *DimensionalNode
+	splits []Split
 }
 
 func NewRandomBasicTreeGenerator(ratios TreeRatios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
@@ -31,6 +37,7 @@ func NewRandomBasicTreeGenerator(ratios TreeRatios, containerRatio float64, numL
 		ContainerRatio: containerRatio,
 		NumLeaves:      numLeaves,
 		Seed:           seed,
+		Is3D:           false,
 	}
 }
 
@@ -55,6 +62,33 @@ func (gen *RandomBasicTreeGenerator) Parameters(f ParameterFormatType) map[strin
 		"Container Ratio":  strconv.FormatFloat(gen.ContainerRatio, 'f', 4, 64),
 		"Number of Leaves": gen.NumLeaves,
 		"Random Seed":      gen.Seed,
+		"3D":               gen.Is3D,
+	}
+}
+
+func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf *DimensionalNode, complements Complements) *leafSplits {
+	ratioIndex := leaf.tree.RatioIndex(leaf.Node, RatioPlaneXY)
+
+	if len(complements[ratioIndex]) == 0 {
+		return nil
+	}
+
+	return &leafSplits{
+		leaf:   leaf,
+		splits: complements[ratioIndex],
+	}
+}
+
+func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, complements Complements) *leafSplits {
+	//ratioIndex := leaf.tree.RatioIndex(leaf.Node, RatioPlaneXY)
+
+	if len(complements[leaf.RatioIndex()]) == 0 {
+		return nil
+	}
+
+	return &leafSplits{
+		leaf:   leaf,
+		splits: complements[leaf.RatioIndex()],
 	}
 }
 
@@ -70,28 +104,66 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 	complements := gen.Ratios.Complements()
 
 	// Generate the container
-	tree := NewTree(gen.Ratios, containerRatioIndex)
+	var tree *Tree
+	if !gen.Is3D {
+		tree = NewTree2D(gen.Ratios, containerRatioIndex)
+	} else {
+		tree = NewTree(gen.Ratios, containerRatioIndex, containerRatioIndex)
+	}
 
 	leafCount := 1
+
+	leafDims := []*DimensionalNode{
+		NewDimensionalNodeFromTree(tree, &Vector{0, 0, 0}, 1.0),
+	}
+
+	lookup := make(map[NodeID]*DimensionalNode)
 
 	for {
 		if leafCount >= gen.NumLeaves {
 			break
 		}
 
-		// Collect all splittable leaves
-		splittableLeaves := tree.FilterNodes(func(node *Node) bool {
-			return node.IsLeaf() && len(complements[node.RatioIndex()]) > 0
-		})
+		it := NewDimensionalIteratorFromLeaves(leafDims)
 
-		if len(splittableLeaves) == 0 {
+		leafDims = leafDims[:0]
+		for it.HasNext() {
+			dimNode := it.Next()
+			lookup[dimNode.Node.id] = dimNode
+			if dimNode.IsLeaf() {
+				leafDims = append(leafDims, dimNode)
+			}
+		}
+
+		// Collect all splittable leaves
+		var filteredLeaves []*leafSplits
+
+		for _, leaf := range leafDims {
+
+			if !gen.Is3D {
+				if filteredLeaf := gen.filterLeaves2D(leaf, complements); filteredLeaf != nil {
+					filteredLeaves = append(filteredLeaves, filteredLeaf)
+				}
+			} else {
+				if filteredLeaf := gen.filterLeaves3D(leaf, complements); filteredLeaf != nil {
+					filteredLeaves = append(filteredLeaves, filteredLeaf)
+				}
+			}
+		}
+		/*
+			splittableLeaves := tree.FilterNodes(func(node *Node) bool {
+				return node.IsLeaf() && len(complements[node.RatioIndex()]) > 0
+			})
+		*/
+
+		if len(filteredLeaves) == 0 {
 			return nil, errors.New("Unable to reach desired number of leaves (" + strconv.Itoa(gen.NumLeaves) + "), got " + strconv.Itoa(leafCount) + ".")
 		}
 
 		// Choose a leaf at random
-		leafIndex := rand.Intn(len(splittableLeaves))
-		leaf := splittableLeaves[leafIndex]
-		splits := complements[leaf.RatioIndex()]
+		leafIndex := rand.Intn(len(filteredLeaves))
+		filteredLeaf := filteredLeaves[leafIndex]
+		splits := filteredLeaf.splits
 
 		// Choose a random split
 		splitIndex := rand.Intn(len(splits))
@@ -103,7 +175,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 			split = split.Inverse()
 		}
 
-		splittableLeaves[leafIndex].Divide(split)
+		filteredLeaf.leaf.Divide(split)
 		leafCount += 1
 	}
 

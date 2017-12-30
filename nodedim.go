@@ -13,20 +13,42 @@ type NodeDimensions interface {
 type DimensionalNode struct {
 	*Node
 	*Dimension
+	RatioIndexXY int
+	RatioIndexZY int
+}
+
+func NewDimensionalNodeFromTree(tree *Tree, offset *Vector, scale float64) *DimensionalNode {
+	ratioXY := tree.RatioXY()
+	ratioZY := tree.RatioZY()
+	return &DimensionalNode{
+		Node: tree.root,
+		Dimension: NewDimension3D(
+			offset.x,
+			offset.y,
+			offset.z,
+			offset.x+ratioXY*scale,
+			offset.y+1*scale,
+			offset.z+ratioZY*scale),
+		RatioIndexXY: tree.xyRatioIndex,
+		RatioIndexZY: tree.zyRatioIndex,
+	}
 }
 
 type DimensionalIterator struct {
 	dimensions []*DimensionalNode
 }
 
-func NewDimensionalIterator(root *Node, offsetX, offsetY, scale float64) *DimensionalIterator {
+func NewDimensionalIterator(tree *Tree, offset *Vector, scale float64) *DimensionalIterator {
 	return &DimensionalIterator{
 		dimensions: []*DimensionalNode{
-			&DimensionalNode{
-				root,
-				NewDimension(offsetX, offsetY, root.Ratio()*scale, 1*scale),
-			},
+			NewDimensionalNodeFromTree(tree, offset, scale),
 		},
+	}
+}
+
+func NewDimensionalIteratorFromLeaves(leaves []*DimensionalNode) *DimensionalIterator {
+	return &DimensionalIterator{
+		dimensions: leaves,
 	}
 }
 
@@ -45,53 +67,68 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 	dimension := node.Dimension
 
 	if !node.IsLeaf() {
-		ratio := node.Ratio()
 		left := node.Node.left
 		right := node.Node.right
+		split := node.Split()
 
-		if node.Split().IsHorizontal() {
-			leftHeight := dimension.Height() * ratio / left.Ratio()
+		if split.IsHorizontal() {
+			leftHeightParam := RatioNormalHeight(node.tree.Ratio(node.RatioIndexXY), left.Ratio())
+			leftRatioIndexZY := FindClosestIndex(node.tree.ratios.Ratios(), node.tree.Ratio(node.RatioIndexZY)/leftHeightParam, node.tree.epsilon)
+			rightRatioIndexZY := FindClosestIndex(node.tree.ratios.Ratios(), node.tree.Ratio(node.RatioIndexZY)/(1-leftHeightParam), node.tree.epsilon)
+			if leftRatioIndexZY < 0 || rightRatioIndexZY < 0 {
+				panic("ZY Ratio is not one of the supported ratios!")
+			}
+			// When we split horizontally we modify both the xy plane AND the yz plane
+			leftHeight := dimension.Height() * leftHeightParam // ratio / left.Ratio()
 
+			//fmt.Printf("split horizontal container: %f ratio: %f\n", node.RatioZY, leftRatioXY)
 			it.dimensions = append(it.dimensions, &DimensionalNode{
-				right,
-				NewDimension(
-					dimension.Left(),
-					dimension.Top()+leftHeight,
-					dimension.Right(),
-					dimension.Bottom(),
-				),
+				Node:         right,
+				Dimension:    dimension.Inset(AxisY, leftHeight),
+				RatioIndexXY: right.RatioIndex(),
+				RatioIndexZY: rightRatioIndexZY,
 			})
 
 			it.dimensions = append(it.dimensions, &DimensionalNode{
-				left,
-				NewDimension(
-					dimension.Left(),
-					dimension.Top(),
-					dimension.Right(),
-					dimension.Top()+leftHeight,
-				),
+				Node:         left,
+				Dimension:    dimension.Inset(AxisY, -leftHeight),
+				RatioIndexXY: left.RatioIndex(),
+				RatioIndexZY: leftRatioIndexZY,
 			})
-		} else {
-			leftWidth := dimension.Width() * left.Ratio() / ratio
+		} else if split.IsVertical() {
+			// When we split vertically
+			leftWidth := dimension.Width() * RatioNormalWidth(node.tree.Ratio(node.RatioIndexXY), left.Ratio()) // left.Ratio() / ratio
 
 			it.dimensions = append(it.dimensions, &DimensionalNode{
-				right,
-				NewDimension(
-					dimension.Left()+leftWidth,
-					dimension.Top(),
-					dimension.Right(),
-					dimension.Bottom(),
-				),
+				Node:         right,
+				Dimension:    dimension.Inset(AxisX, leftWidth),
+				RatioIndexXY: right.RatioIndex(),
+				RatioIndexZY: node.RatioIndexZY,
 			})
 
 			it.dimensions = append(it.dimensions, &DimensionalNode{
-				left,
-				NewDimension(
-					dimension.Left(),
-					dimension.Top(),
-					dimension.Left()+leftWidth,
-					dimension.Bottom(),
-				),
+				Node:         left,
+				Dimension:    dimension.Inset(AxisX, -leftWidth),
+				RatioIndexXY: left.RatioIndex(),
+				RatioIndexZY: node.RatioIndexZY,
+			})
+		} else if split.IsDepth() {
+			//fmt.Println("splitting depth")
+			leftDepth := dimension.Depth() * RatioNormalWidth(node.tree.Ratio(node.RatioIndexZY), left.Ratio())
+			//fmt.Printf("depth: %f, container: %f, ratio: %f\n", dimension.Depth(), node.RatioZY, leftRatio)
+
+			it.dimensions = append(it.dimensions, &DimensionalNode{
+				Node:         right,
+				Dimension:    dimension.Inset(AxisZ, leftDepth),
+				RatioIndexXY: node.RatioIndexXY,
+				RatioIndexZY: right.RatioIndex(),
+			})
+
+			it.dimensions = append(it.dimensions, &DimensionalNode{
+				Node:         left,
+				Dimension:    dimension.Inset(AxisZ, -leftDepth),
+				RatioIndexXY: node.RatioIndexXY,
+				RatioIndexZY: left.RatioIndex(),
 			})
 		}
 
@@ -101,15 +138,15 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 }
 
 type NodeDimensionMap struct {
-	lookup map[NodeID]*Dimension
+	lookup map[NodeID]*DimensionalNode
 }
 
-func NewNodeDimensionMap(root *Node, offsetX, offsetY, scale float64) *NodeDimensionMap {
-	lookup := make(map[NodeID]*Dimension)
-	it := NewDimensionalIterator(root, offsetX, offsetY, scale)
+func NewNodeDimensionMap(tree *Tree, offset *Vector, scale float64) *NodeDimensionMap {
+	lookup := make(map[NodeID]*DimensionalNode)
+	it := NewDimensionalIterator(tree, offset, scale)
 	for it.HasNext() {
 		dimNode := it.Next()
-		lookup[dimNode.Node.id] = dimNode.Dimension
+		lookup[dimNode.Node.id] = dimNode
 	}
 	return &NodeDimensionMap{
 		lookup: lookup,
@@ -120,6 +157,6 @@ func (nodeDimMap NodeDimensionMap) Dimension(node *Node) (*Dimension, error) {
 	if dim, ok := nodeDimMap.lookup[node.id]; !ok {
 		return nil, ErrNotFound
 	} else {
-		return dim, nil
+		return dim.Dimension, nil
 	}
 }

@@ -60,6 +60,18 @@ type treeRatios struct {
 	complements Complements
 }
 
+// Returns the parameterized height of a ratio if it is contained within another
+// ratio. i.e. A ratio of 2:1 within a ratio of 1:2 has a normal height of 0.25
+func RatioNormalHeight(containerRatio, ratio float64) float64 {
+	return containerRatio / ratio
+}
+
+// Returns the parameterized width of a ratio if it is contained within another
+// ratio. i.e. A ratio of 1:2 within a ratio of 2:1 has a normal width of 0.25
+func RatioNormalWidth(containerRatio, ratio float64) float64 {
+	return ratio / containerRatio
+}
+
 // Given a sorted list of values, the epsilon value is some function of the
 // minimum distance between two of the values. Technically we should only have
 // to divide this by 2, but we do it by 1000 just for fun.

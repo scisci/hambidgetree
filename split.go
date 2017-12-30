@@ -4,14 +4,16 @@ import "strconv"
 
 type SplitType int
 
-const SplitTypeHorizontal SplitType = 1
-const SplitTypeVertical SplitType = 2
+const SplitTypeHorizontal SplitType = 1 // Split along Y axis
+const SplitTypeVertical SplitType = 2   // Split along X axis
+const SplitTypeDepth SplitType = 3      // Split along Z axis
 
 type Split interface {
 	LeftIndex() int
 	RightIndex() int
 	IsHorizontal() bool
 	IsVertical() bool
+	IsDepth() bool
 	String() string
 	Inverse() Split
 }
@@ -50,6 +52,10 @@ func (s *split) IsVertical() bool {
 	return s.typ == SplitTypeVertical
 }
 
+func (s *split) IsDepth() bool {
+	return s.typ == SplitTypeDepth
+}
+
 func (s *split) String() string {
 	str := "Split{"
 	switch s.typ {
@@ -57,6 +63,8 @@ func (s *split) String() string {
 		str = str + "h"
 	case SplitTypeVertical:
 		str = str + "v"
+	case SplitTypeDepth:
+		str = str + "d"
 	default:
 		str = str + "?"
 	}
@@ -83,4 +91,8 @@ func NewVerticalSplit(leftIndex, rightIndex int) Split {
 
 func NewHorizontalSplit(leftIndex, rightIndex int) Split {
 	return NewSplit(SplitTypeHorizontal, leftIndex, rightIndex)
+}
+
+func NewDepthSplit(leftIndex, rightIndex int) Split {
+	return NewSplit(SplitTypeDepth, leftIndex, rightIndex)
 }

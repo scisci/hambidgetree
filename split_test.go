@@ -19,6 +19,11 @@ var splitTests = []struct {
 		0,
 		1,
 	}, {
+		NewSplit(SplitTypeDepth, 0, 1),
+		SplitTypeDepth,
+		0,
+		1,
+	}, {
 		NewSplit(SplitTypeHorizontal, 0, 0),
 		SplitTypeHorizontal,
 		0,
@@ -38,8 +43,9 @@ var splitTests = []struct {
 func TestNewSplit(t *testing.T) {
 	for i, args := range splitTests {
 		split := args.split
-		if (args.typ == SplitTypeHorizontal && (!split.IsHorizontal() || split.IsVertical())) ||
-			(args.typ == SplitTypeVertical && (!split.IsVertical() || split.IsHorizontal())) {
+		if (args.typ == SplitTypeHorizontal && (!split.IsHorizontal() || split.IsVertical() || split.IsDepth())) ||
+			(args.typ == SplitTypeVertical && (!split.IsVertical() || split.IsHorizontal() || split.IsDepth())) ||
+			(args.typ == SplitTypeDepth && (!split.IsDepth() || split.IsHorizontal() || split.IsVertical())) {
 			t.Errorf("Split test %d failed, dimensionality is wrong")
 		}
 
