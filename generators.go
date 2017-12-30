@@ -19,11 +19,11 @@ type TreeGenerator interface {
 }
 
 type RandomBasicTreeGenerator struct {
-	Ratios         TreeRatios
-	ContainerRatio float64
-	NumLeaves      int
-	Seed           int64
-	Is3D           bool
+	Ratios    TreeRatios
+	XYRatio   float64
+	ZYRatio   float64
+	NumLeaves int
+	Seed      int64
 }
 
 type leafSplits struct {
@@ -33,11 +33,20 @@ type leafSplits struct {
 
 func NewRandomBasicTreeGenerator(ratios TreeRatios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
 	return &RandomBasicTreeGenerator{
-		Ratios:         ratios,
-		ContainerRatio: containerRatio,
-		NumLeaves:      numLeaves,
-		Seed:           seed,
-		Is3D:           false,
+		Ratios:    ratios,
+		XYRatio:   containerRatio,
+		NumLeaves: numLeaves,
+		Seed:      seed,
+	}
+}
+
+func NewRandomBasic3DTreeGenerator(ratios TreeRatios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+	return &RandomBasicTreeGenerator{
+		Ratios:    ratios,
+		XYRatio:   xyRatio,
+		ZYRatio:   zyRatio,
+		NumLeaves: numLeaves,
+		Seed:      seed,
 	}
 }
 
@@ -58,12 +67,16 @@ func (gen *RandomBasicTreeGenerator) Parameters(f ParameterFormatType) map[strin
 	}
 
 	return map[string]interface{}{
-		"Ratios":           RatiosParameterString(gen.Ratios.Ratios()),
-		"Container Ratio":  strconv.FormatFloat(gen.ContainerRatio, 'f', 4, 64),
-		"Number of Leaves": gen.NumLeaves,
-		"Random Seed":      gen.Seed,
-		"3D":               gen.Is3D,
+		"Ratios":               RatiosParameterString(gen.Ratios.Ratios()),
+		"Container Ratio (XY)": strconv.FormatFloat(gen.XYRatio, 'f', 4, 64),
+		"Container Ratio (ZY)": strconv.FormatFloat(gen.ZYRatio, 'f', 4, 64),
+		"Number of Leaves":     gen.NumLeaves,
+		"Random Seed":          gen.Seed,
 	}
+}
+
+func (gen *RandomBasicTreeGenerator) Is3D() bool {
+	return gen.ZYRatio > 0
 }
 
 func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf *DimensionalNode, complements Complements) *leafSplits {
@@ -80,15 +93,83 @@ func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf *DimensionalNode, compl
 }
 
 func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, complements Complements) *leafSplits {
-	//ratioIndex := leaf.tree.RatioIndex(leaf.Node, RatioPlaneXY)
+	// We have horizontal and vertical splits defined in the complements array.
+	// We have 3 possible planes that could be divided vertically/horizontally.
+	xyRatioIndex := leaf.RatioIndexXY
+	zyRatioIndex := leaf.RatioIndexZY
 
-	if len(complements[leaf.RatioIndex()]) == 0 {
+	xyComplements := complements[xyRatioIndex]
+	zyComplements := complements[zyRatioIndex]
+
+	// Visit each horizontal/vertical and see if it is compatible with the zy and
+	// zx planes.
+
+	// Any horizontal cut on the xy axis, affects the zy axis:
+	//   XYCutHeight = XYRatio / XYRatioTop
+	//   ZYRatioTop = ZYRatio / XYCutHeight
+	//   Compatible if ZYRatioTop can be found in the index
+	// Any vertical cut on the xy axis, affects the zx axis:
+	//   XYCutWidth = XYRatioLeft / XYRatio
+	//   XZRatioTop = XZRatio / XYCutWidth
+	// Any vertical cut on the zy axis, affects the zx axis
+	//   ZYCutWidth = ZYRatioLeft / ZYRatio
+	//   XZRatioLeft = ZYCutWidth / XZRatio
+
+	// Take each vertical split possible for the zyRatioIndex and check it against
+	// the zx plane. If good, then add these to the possibilities as a DepthSplit
+	// (instead of a vertical split)
+
+	xyRatio := leaf.tree.Ratio(xyRatioIndex)
+	zyRatio := leaf.tree.Ratio(zyRatioIndex)
+	xzRatio := zyRatio / xyRatio
+	var splits []Split
+
+	for _, xySplit := range xyComplements {
+		if xySplit.IsHorizontal() {
+			cutHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
+			zyRatioTop := zyRatio / cutHeight
+			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioTop, leaf.tree.epsilon)
+			if index < 0 {
+				continue
+			}
+			// TODO: do we need to check the right as well? or is it guaranteed
+		} else if xySplit.IsVertical() {
+			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
+			xzRatioTop := xzRatio / cutWidth
+			index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioTop, leaf.tree.epsilon)
+			if index < 0 {
+				continue
+			}
+			// TODO: do we need to check the right as well?
+		} else {
+			panic("What type?")
+		}
+
+		splits = append(splits, xySplit)
+	}
+
+	for _, zySplit := range zyComplements {
+		if !zySplit.IsVertical() {
+			continue
+		}
+
+		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
+		xzRatioLeft := cutWidth / xzRatio
+		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, leaf.tree.epsilon)
+		if index < 0 {
+			continue
+		}
+		// TODO: do we need to check the right as well?
+		splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
+	}
+
+	if len(splits) == 0 {
 		return nil
 	}
 
 	return &leafSplits{
 		leaf:   leaf,
-		splits: complements[leaf.RatioIndex()],
+		splits: splits,
 	}
 }
 
@@ -96,8 +177,8 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 	rand.Seed(gen.Seed)
 
 	epsilon := CalculateRatiosEpsilon(gen.Ratios.Ratios())
-	containerRatioIndex := FindClosestIndex(gen.Ratios.Ratios(), gen.ContainerRatio, epsilon)
-	if containerRatioIndex < 0 {
+	xyRatioIndex := FindClosestIndex(gen.Ratios.Ratios(), gen.XYRatio, epsilon)
+	if xyRatioIndex < 0 {
 		return nil, errors.New("Container ratio not found in list of ratios.")
 	}
 
@@ -105,10 +186,14 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 
 	// Generate the container
 	var tree *Tree
-	if !gen.Is3D {
-		tree = NewTree2D(gen.Ratios, containerRatioIndex)
+	if !gen.Is3D() {
+		tree = NewTree2D(gen.Ratios, xyRatioIndex)
 	} else {
-		tree = NewTree(gen.Ratios, containerRatioIndex, containerRatioIndex)
+		zyRatioIndex := FindClosestIndex(gen.Ratios.Ratios(), gen.ZYRatio, epsilon)
+		if zyRatioIndex < 0 {
+			return nil, errors.New("Container ratio not found in list of ratios.")
+		}
+		tree = NewTree(gen.Ratios, xyRatioIndex, zyRatioIndex)
 	}
 
 	leafCount := 1
@@ -116,8 +201,6 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 	leafDims := []*DimensionalNode{
 		NewDimensionalNodeFromTree(tree, &Vector{0, 0, 0}, 1.0),
 	}
-
-	lookup := make(map[NodeID]*DimensionalNode)
 
 	for {
 		if leafCount >= gen.NumLeaves {
@@ -129,7 +212,6 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 		leafDims = leafDims[:0]
 		for it.HasNext() {
 			dimNode := it.Next()
-			lookup[dimNode.Node.id] = dimNode
 			if dimNode.IsLeaf() {
 				leafDims = append(leafDims, dimNode)
 			}
@@ -140,7 +222,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 
 		for _, leaf := range leafDims {
 
-			if !gen.Is3D {
+			if !gen.Is3D() {
 				if filteredLeaf := gen.filterLeaves2D(leaf, complements); filteredLeaf != nil {
 					filteredLeaves = append(filteredLeaves, filteredLeaf)
 				}
