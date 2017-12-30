@@ -207,7 +207,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 			break
 		}
 
-		it := NewDimensionalIteratorFromLeaves(leafDims)
+		it := NewDimensionalIterator(tree, &Vector{0, 0, 0}, 1.0) // NewDimensionalIteratorFromLeaves(leafDims)
 
 		leafDims = leafDims[:0]
 		for it.HasNext() {
