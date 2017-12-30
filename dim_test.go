@@ -58,3 +58,55 @@ func TestIntersect(t *testing.T) {
 		}
 	}
 }
+
+func TestInset(t *testing.T) {
+	dim := NewDimension3D(0, 0, 0, 20, 20, 20)
+	dim1 := dim.Inset(AxisX, 5)
+	dim2 := dim.Inset(AxisX, -5)
+	dim3 := dim.Inset(AxisY, 5)
+	dim4 := dim.Inset(AxisY, -5)
+	dim5 := dim.Inset(AxisZ, 5)
+	dim6 := dim.Inset(AxisZ, -5)
+	if dim.Left() != 0 {
+		t.Errorf("Inset should keep immutable, got left %f", dim.Left())
+	}
+	if dim.Right() != 20 {
+		t.Errorf("Inset should keep immutable, got left %f", dim.Right())
+	}
+	if dim1.Left() != 5 {
+		t.Errorf("Inset failed left should be 5, got %f", dim1.Left())
+	}
+	if dim1.Right() != 20 {
+		t.Errorf("Inset failed left should be 20, got %f", dim1.Right())
+	}
+	if dim2.Left() != 0 {
+		t.Errorf("Inset failed left should be 0, got %f", dim2.Left())
+	}
+	if dim2.Right() != 15 {
+		t.Errorf("Inset failed left should be 15, got %f", dim2.Right())
+	}
+	if dim3.Top() != 5 {
+		t.Errorf("Inset failed left should be 5, got %f", dim3.Top())
+	}
+	if dim3.Bottom() != 20 {
+		t.Errorf("Inset failed left should be 20, got %f", dim3.Bottom())
+	}
+	if dim4.Top() != 0 {
+		t.Errorf("Inset failed left should be 0, got %f", dim4.Top())
+	}
+	if dim4.Bottom() != 15 {
+		t.Errorf("Inset failed left should be 15, got %f", dim4.Bottom())
+	}
+	if dim5.Front() != 5 {
+		t.Errorf("Inset failed left should be 5, got %f", dim5.Front())
+	}
+	if dim5.Back() != 20 {
+		t.Errorf("Inset failed left should be 20, got %f", dim5.Back())
+	}
+	if dim6.Front() != 0 {
+		t.Errorf("Inset failed left should be 0, got %f", dim6.Front())
+	}
+	if dim6.Back() != 15 {
+		t.Errorf("Inset failed left should be 15, got %f", dim6.Back())
+	}
+}
