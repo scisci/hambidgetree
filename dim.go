@@ -14,6 +14,10 @@ type Vector struct {
 	z float64
 }
 
+func NewVector(x, y, z float64) *Vector {
+	return &Vector{x, y, z}
+}
+
 type Dimension struct {
 	x Extent
 	y Extent
