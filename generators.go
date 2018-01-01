@@ -123,7 +123,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 	xyRatio := leaf.tree.Ratio(xyRatioIndex)
 	zyRatio := leaf.tree.Ratio(zyRatioIndex)
-	xzRatio := zyRatio / xyRatio
+	zxRatio := zyRatio / xyRatio
 	var splits []Split
 
 	for _, xySplit := range xyComplements {
@@ -147,14 +147,14 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		} else if xySplit.IsVertical() {
 			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			compWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
-			xzRatioTop := xzRatio / cutWidth
-			xzRatioBottom := xzRatio / compWidth
-			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
+			zxRatioTop := zxRatio / cutWidth
+			zxRatioBottom := zxRatio / compWidth
+			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zxRatioTop, 0.0000001)
 			if index < 0 {
 				continue
 			}
 
-			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioBottom, 0.0000001)
+			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zxRatioBottom, 0.0000001)
 			if index < 0 {
 				continue
 				//fmt.Printf("tried to split v ratio (xy:%f, xz:%f, zy:%f) with width %f from ratio %f against xz %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatio, zyRatio, cutWidth, leaf.tree.Ratio(xySplit.LeftIndex()), xzRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
@@ -175,14 +175,14 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
 		compWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.RightIndex()))
-		xzRatioLeft := cutWidth / xzRatio
-		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, 0.0000001)
+		zxRatioLeft := cutWidth * zxRatio
+		index := FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioLeft, 0.0000001)
 		if index < 0 {
 			continue
 		}
 
-		xzRatioRight := compWidth / xzRatio
-		index = FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioRight, 0.0000001)
+		zxRatioRight := compWidth * zxRatio
+		index = FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioRight, 0.0000001)
 		if index < 0 {
 			continue
 			//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
