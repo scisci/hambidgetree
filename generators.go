@@ -127,6 +127,11 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 	for _, xySplit := range xyComplements {
 		if xySplit.IsHorizontal() {
 			cutHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
+			compHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
+			total := 1.0 - (cutHeight + compHeight)
+			if total < -0.0000001 || total > 0.0000001 {
+				panic("Invalid complement")
+			}
 			zyRatioTop := zyRatio / cutHeight
 			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioTop, 0.0000001)
 			if index < 0 {
