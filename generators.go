@@ -3,7 +3,8 @@ package hambidgetree
 import "math/rand"
 import "strconv"
 import "errors"
-import "fmt"
+
+//import "fmt"
 
 type ParameterFormatType int
 
@@ -129,10 +130,6 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		if xySplit.IsHorizontal() {
 			cutHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			compHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
-			total := 1.0 - (cutHeight + compHeight)
-			if total < -0.0000001 || total > 0.0000001 {
-				panic("Invalid complement")
-			}
 			zyRatioTop := zyRatio / cutHeight
 			zyRatioBottom := zyRatio / compHeight
 			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zyRatioTop, 0.0000001)
@@ -142,17 +139,14 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zyRatioBottom, 0.0000001)
 			if index < 0 {
-				fmt.Printf("tried to split h ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, zyRatioTop, zyRatioBottom, zyRatioBottom)
-				panic("right invalid")
+				continue
+				//fmt.Printf("tried to split h ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, zyRatioTop, zyRatioBottom, zyRatioBottom)
+				//panic("right invalid")
 			}
 			// TODO: do we need to check the right as well? or is it guaranteed
 		} else if xySplit.IsVertical() {
 			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			compWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
-			total := 1.0 - (cutWidth + compWidth)
-			if total < -0.0000001 || total > 0.0000001 {
-				panic("Invalid complement")
-			}
 			xzRatioTop := xzRatio / cutWidth
 			xzRatioBottom := xzRatio / compWidth
 			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
@@ -162,8 +156,9 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioBottom, 0.0000001)
 			if index < 0 {
-				fmt.Printf("tried to split v ratio (xy:%f, xz:%f, zy:%f) with width %f from ratio %f against xz %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatio, zyRatio, cutWidth, leaf.tree.Ratio(xySplit.LeftIndex()), xzRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
-				panic("right invalid")
+				continue
+				//fmt.Printf("tried to split v ratio (xy:%f, xz:%f, zy:%f) with width %f from ratio %f against xz %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatio, zyRatio, cutWidth, leaf.tree.Ratio(xySplit.LeftIndex()), xzRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
+				//panic("right invalid")
 			}
 			// TODO: do we need to check the right as well?
 		} else {
@@ -180,10 +175,6 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
 		compWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.RightIndex()))
-		total := 1.0 - (cutWidth + compWidth)
-		if total < -0.0000001 || total > 0.0000001 {
-			panic("Invalid complement")
-		}
 		xzRatioLeft := cutWidth / xzRatio
 		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, 0.0000001)
 		if index < 0 {
@@ -193,8 +184,9 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		xzRatioRight := compWidth / xzRatio
 		index = FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioRight, 0.0000001)
 		if index < 0 {
-			fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
-			panic("right invalid")
+			continue
+			//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
+			//panic("right invalid")
 		}
 		// TODO: do we need to check the right as well?
 		splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
