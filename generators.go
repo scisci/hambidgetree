@@ -140,6 +140,11 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 			// TODO: do we need to check the right as well? or is it guaranteed
 		} else if xySplit.IsVertical() {
 			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
+			compWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
+			total := 1.0 - (cutWidth + compWidth)
+			if total < -0.0000001 || total > 0.0000001 {
+				panic("Invalid complement")
+			}
 			xzRatioTop := xzRatio / cutWidth
 			index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
 			if index < 0 {
@@ -159,6 +164,11 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		}
 
 		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
+		compWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.RightIndex()))
+		total := 1.0 - (cutWidth + compWidth)
+		if total < -0.0000001 || total > 0.0000001 {
+			panic("Invalid complement")
+		}
 		xzRatioLeft := cutWidth / xzRatio
 		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, 0.0000001)
 		if index < 0 {
