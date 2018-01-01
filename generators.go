@@ -134,12 +134,12 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 			}
 			zyRatioTop := zyRatio / cutHeight
 			zyRatioBottom := zyRatio / compHeight
-			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioTop, 0.0000001)
+			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zyRatioTop, 0.0000001)
 			if index < 0 {
 				continue
 			}
 
-			index = FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioBottom, 0.0000001)
+			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), zyRatioBottom, 0.0000001)
 			if index < 0 {
 				panic("right invalid")
 			}
@@ -153,12 +153,12 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 			}
 			xzRatioTop := xzRatio / cutWidth
 			xzRatioBottom := xzRatio / compWidth
-			index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
+			index := FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
 			if index < 0 {
 				continue
 			}
 
-			index = FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioBottom, 0.0000001)
+			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioBottom, 0.0000001)
 			if index < 0 {
 				panic("right invalid")
 			}

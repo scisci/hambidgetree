@@ -259,6 +259,20 @@ func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
 	return closestIndex
 }
 
+func FindClosestIndexWithinRange(ratios Ratios, ratio, epsilon float64) int {
+	index := FindClosestIndex(ratios, ratio, epsilon)
+	if index < 0 {
+		return -1
+	}
+
+	dist := ratio - ratios.At(index)
+	if dist < -epsilon || dist > epsilon {
+		return -1
+	}
+
+	return index
+}
+
 func FindClosestInverseIndex(ratios Ratios, ratio, epsilon float64) int {
 	return FindClosestIndex(ratios, 1.0/ratio, epsilon)
 }
