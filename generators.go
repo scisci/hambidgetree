@@ -174,6 +174,12 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		if index < 0 {
 			continue
 		}
+
+		xzRatioRight := compWidth / xzRatio
+		index = FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioRight, 0.0000001)
+		if index < 0 {
+			panic("right invalid")
+		}
 		// TODO: do we need to check the right as well?
 		splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
 	}
