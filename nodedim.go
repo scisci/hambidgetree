@@ -2,6 +2,7 @@ package hambidgetree
 
 import (
 	"errors"
+	"fmt"
 )
 
 var ErrNotFound = errors.New("Not Found")
@@ -73,10 +74,20 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 
 		if split.IsHorizontal() {
 			leftHeightParam := RatioNormalHeight(node.tree.Ratio(node.RatioIndexXY), left.Ratio())
-			leftRatioIndexZY := FindClosestIndex(node.tree.ratios.Ratios(), node.tree.Ratio(node.RatioIndexZY)/leftHeightParam, node.tree.epsilon)
-			rightRatioIndexZY := FindClosestIndex(node.tree.ratios.Ratios(), node.tree.Ratio(node.RatioIndexZY)/(1-leftHeightParam), node.tree.epsilon)
-			if leftRatioIndexZY < 0 || rightRatioIndexZY < 0 {
-				panic("ZY Ratio is not one of the supported ratios!")
+
+			leftRatioIndexZY := node.RatioIndexZY
+			rightRatioIndexZY := node.RatioIndexZY
+
+			if node.RatioIndexZY > -1 {
+				zyRatio := node.tree.Ratio(node.RatioIndexZY)
+				leftRatio := zyRatio / leftHeightParam
+				rightRatio := zyRatio / (1 - leftHeightParam)
+				leftRatioIndexZY = FindClosestIndexWithinRange(node.tree.ratios.Ratios(), leftRatio, 0.0000001)
+				rightRatioIndexZY = FindClosestIndexWithinRange(node.tree.ratios.Ratios(), rightRatio, 0.0000001)
+				if leftRatioIndexZY < 0 || rightRatioIndexZY < 0 {
+					fmt.Printf("Failed to split horizontal container:%f, left:%f, right:%f\n", zyRatio, leftRatio, rightRatio)
+					panic("ZY Ratio is not one of the supported ratios!")
+				}
 			}
 
 			//fmt.Printf("split horizontal container: %f ratio: %f\n", node.RatioZY, leftRatioXY)
