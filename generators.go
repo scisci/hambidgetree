@@ -155,7 +155,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
 		xzRatioLeft := cutWidth / xzRatio
-		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, leaf.tree.epsilon)
+		index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioLeft, 0.0000001)
 		if index < 0 {
 			continue
 		}
