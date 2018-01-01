@@ -162,7 +162,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 			index = FindClosestIndexWithinRange(leaf.tree.ratios.Ratios(), xzRatioBottom, 0.0000001)
 			if index < 0 {
-				fmt.Printf("tried to split v ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
+				fmt.Printf("tried to split v ratio %f with width %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, cutWidth, xzRatioTop, xzRatioBottom, xzRatioBottom)
 				panic("right invalid")
 			}
 			// TODO: do we need to check the right as well?
