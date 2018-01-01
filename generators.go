@@ -167,30 +167,31 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 
 		splits = append(splits, xySplit)
 	}
+	/*
+		for _, zySplit := range zyComplements {
+			if !zySplit.IsVertical() {
+				continue
+			}
 
-	for _, zySplit := range zyComplements {
-		if !zySplit.IsVertical() {
-			continue
-		}
+			cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
+			compWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.RightIndex()))
+			zxRatioLeft := cutWidth * zxRatio
+			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioLeft, 0.0000001)
+			if index < 0 {
+				continue
+			}
 
-		cutWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.LeftIndex()))
-		compWidth := RatioNormalWidth(zyRatio, leaf.tree.Ratio(zySplit.RightIndex()))
-		zxRatioLeft := cutWidth * zxRatio
-		index := FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioLeft, 0.0000001)
-		if index < 0 {
-			continue
+			zxRatioRight := compWidth * zxRatio
+			index = FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioRight, 0.0000001)
+			if index < 0 {
+				continue
+				//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
+				//panic("right invalid")
+			}
+			// TODO: do we need to check the right as well?
+			splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
 		}
-
-		zxRatioRight := compWidth * zxRatio
-		index = FindClosestIndex(leaf.tree.ratios.Ratios(), zxRatioRight, 0.0000001)
-		if index < 0 {
-			continue
-			//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
-			//panic("right invalid")
-		}
-		// TODO: do we need to check the right as well?
-		splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
-	}
+	*/
 
 	if len(splits) == 0 {
 		return nil
