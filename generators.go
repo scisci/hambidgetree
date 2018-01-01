@@ -128,7 +128,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		if xySplit.IsHorizontal() {
 			cutHeight := RatioNormalHeight(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			zyRatioTop := zyRatio / cutHeight
-			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioTop, leaf.tree.epsilon)
+			index := FindClosestIndex(leaf.tree.ratios.Ratios(), zyRatioTop, 0.0000001)
 			if index < 0 {
 				continue
 			}
@@ -136,7 +136,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 		} else if xySplit.IsVertical() {
 			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			xzRatioTop := xzRatio / cutWidth
-			index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioTop, leaf.tree.epsilon)
+			index := FindClosestIndex(leaf.tree.ratios.Ratios(), xzRatioTop, 0.0000001)
 			if index < 0 {
 				continue
 			}
