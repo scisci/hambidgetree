@@ -1,6 +1,7 @@
 package hambidgetree
 
 import "testing"
+import "math"
 
 var intersectionTests = []struct {
 	d1                *Dimension
@@ -108,5 +109,109 @@ func TestInset(t *testing.T) {
 	}
 	if dim6.Back() != 15 {
 		t.Errorf("Inset failed left should be 15, got %f", dim6.Back())
+	}
+}
+
+var aabb3d1 = NewDimension3D(-10, -10, -10, 10, 10, 10)
+
+// 2 instersects with 1
+var aabb3d2 = NewDimension3D(-5, 4, -30, -2, 20, 30)
+
+// 3 contains 1
+var aabb3d3 = NewDimension3D(-25, -25, -25, 25, 25, 25)
+
+// 4 does not intersect with 1
+var aabb3d4 = NewDimension3D(-40, -40, -40, -15, -25, -12)
+
+// Barely intersects with 1
+var aabb3d5 = NewDimension3D(10, 10, 10, 20, 20, 20)
+
+// 1 in each direction
+var aabb3d6 = NewDimension3D(11, 11, 11, 20, 20, 20)
+
+var aabb2d1 = NewDimension2D(-10, -10, 10, 10)
+
+// 2 instersects with 1
+var aabb2d2 = NewDimension2D(-5, 4, -2, 20)
+
+// 3 contains 1
+var aabb2d3 = NewDimension2D(-25, -25, 25, 25)
+
+// 4 does not intersect with 1
+var aabb2d4 = NewDimension2D(-40, -40, -15, -25)
+
+// Barely intersects with 1
+var aabb2d5 = NewDimension2D(10, 10, 20, 20)
+
+// 1 in each direction
+var aabb2d6 = NewDimension2D(11, 11, 20, 20)
+
+var distanceTests = []struct {
+	d1              *Dimension
+	d2              *Dimension
+	distanceSquared float64
+}{
+	{ // Intersects
+		aabb3d1,
+		aabb3d2,
+		0,
+	},
+	{ // Contains
+		aabb3d1,
+		aabb3d3,
+		0,
+	},
+	{
+		aabb3d1,
+		aabb3d5,
+		0,
+	},
+	{
+		aabb3d1,
+		aabb3d6,
+		3,
+	},
+	{ //Distance
+		aabb3d4,
+		aabb3d1,
+		254, // 5 * 5 + 15 * 15 + 2 * 2
+	},
+	{ // Intersects
+		aabb2d1,
+		aabb2d2,
+		0,
+	},
+	{ // Contains
+		aabb2d1,
+		aabb2d3,
+		0,
+	},
+	{
+		aabb2d1,
+		aabb2d5,
+		0,
+	},
+	{
+		aabb2d1,
+		aabb2d6,
+		2,
+	},
+	{ //Distance
+		aabb2d4,
+		aabb2d1,
+		250, // 5 * 5 + 15 * 15
+	},
+}
+
+func TestDistance(t *testing.T) {
+	for i, args := range distanceTests {
+		d := args.d1.DistanceSquared(args.d2)
+		d1 := args.d2.DistanceSquared(args.d1)
+		if math.Abs(d-args.distanceSquared) > 0.0000001 {
+			t.Errorf("Distance %d wrong, expected %f, got %f", i, args.distanceSquared, d)
+		}
+		if math.Abs(d1-d) > 0.0000001 {
+			t.Errorf("Distance %d inverse failed", i)
+		}
 	}
 }

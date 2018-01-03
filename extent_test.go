@@ -1,6 +1,7 @@
 package hambidgetree
 
 import "testing"
+import "math"
 
 var extentIntersectionTests = []struct {
 	e1           Extent
@@ -104,4 +105,49 @@ func TestExtentEqual(t *testing.T) {
 	notEqual(e3, e2)
 	notEqual(e2, e4)
 	notEqual(e4, e2)
+}
+
+var extentDistanceTests = []struct {
+	e1       Extent
+	e2       Extent
+	distance float64
+}{
+	{ // Identity
+		NewExtent(0, 1),
+		NewExtent(0, 1),
+		0,
+	},
+	{ // Overlapping
+		NewExtent(0, 1),
+		NewExtent(0.5, 1.5),
+		0,
+	},
+	{ // Edge to Edge
+		NewExtent(0, 1),
+		NewExtent(1, 2),
+		0,
+	},
+	{ // Separated
+		NewExtent(0, 1),
+		NewExtent(1.1, 1.2),
+		0.1,
+	},
+	{ // Separated
+		NewExtent(-1, -0.1),
+		NewExtent(0.2, 0.4),
+		0.3,
+	},
+}
+
+func TestExtentDistance(t *testing.T) {
+	for i, args := range extentDistanceTests {
+		dist := args.e1.Distance(args.e2)
+		dist2 := args.e2.Distance(args.e1)
+		if math.Abs(args.distance-dist) > 0.0000001 {
+			t.Errorf("Distance %d not equal expected %f got %f", i, args.distance, dist)
+		}
+		if math.Abs(dist2-dist) > 0.0000001 {
+			t.Errorf("Distance %d inverse failed", i)
+		}
+	}
 }

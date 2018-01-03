@@ -4,9 +4,9 @@ import "fmt"
 
 type Axis int
 
-const AxisX = 0
-const AxisY = 1
-const AxisZ = 2
+const AxisX = 1
+const AxisY = 2
+const AxisZ = 4
 
 type Vector struct {
 	x float64
@@ -109,6 +109,13 @@ func (dim *Dimension) Inset(axis Axis, distance float64) *Dimension {
 	}
 
 	return inset
+}
+
+func (dim *Dimension) DistanceSquared(other *Dimension) float64 {
+	dx := dim.x.Distance(other.x)
+	dy := dim.y.Distance(other.y)
+	dz := dim.z.Distance(other.z)
+	return dx*dx + dy*dy + dz*dz
 }
 
 // Calculates the amount the provided dimension/rect overlaps this rect on

@@ -36,6 +36,18 @@ func (extent Extent) Size() float64 {
 	return extent.end - extent.start
 }
 
+func (extent Extent) Distance(other Extent) float64 {
+	if other.end < extent.start {
+		return extent.start - other.end
+	}
+
+	if other.start > extent.end {
+		return other.start - extent.end
+	}
+
+	return 0.0
+}
+
 func (extent Extent) Intersect(other Extent) Extent {
 	if other.end < extent.start {
 		return NewExtent(extent.start, extent.start)
