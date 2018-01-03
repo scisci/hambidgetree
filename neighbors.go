@@ -1,5 +1,7 @@
 package hambidgetree
 
+// Go up the tree and select all 'other' leaves, then recursively visit any
+// branches that intersect our leaf until we find leaves that intersect
 func FindNeighbors(leaf *Node, dimNodeMap NodeDimensions) ([]*Node, error) {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
