@@ -2,6 +2,7 @@ package hambidgetree
 
 import (
 	"bytes"
+	"fmt"
 	gpath "gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 	"math"
@@ -170,6 +171,8 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 	chaos := stepsToValue(attributor.Chaos, attributor.MaxChaos)
 
 	for leafID, neighbors := range matrix {
+		fmt.Printf("leaf %d has %d neighbors\n", leafID, len(neighbors))
+
 		for _, neighbor := range neighbors {
 			if graph.HasEdgeBetween(simple.Node(leafID), simple.Node(neighbor.ID())) {
 				continue
