@@ -155,7 +155,14 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 	}
 	numLeaves := len(matrix)
 
-	edges := createEdgeNodes(int64(numLeaves))
+	maxID := int64(0)
+	for leafID, _ := range matrix {
+		if int64(leafID) > maxID {
+			maxID = int64(leafID)
+		}
+	}
+
+	edges := createEdgeNodes(maxID + 1)
 
 	graph := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 
