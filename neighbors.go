@@ -1,11 +1,27 @@
 package hambidgetree
 
+func BuildAdjacencyMatrix(tree *Tree, dimensionLookup NodeDimensions) (map[NodeID][]*Node, error) {
+
+	leaves := tree.Leaves()
+
+	matrix := make(map[NodeID][]*Node)
+
+	for _, leaf := range leaves {
+		neighbors, err := FindNeighbors(leaf, dimensionLookup)
+		if err != nil {
+			return nil, err
+		}
+		matrix[leaf.id] = neighbors
+	}
+	return matrix, nil
+}
+
 // Go up the tree and select all 'other' leaves, then recursively visit any
 // branches that intersect our leaf until we find leaves that intersect
-func FindNeighbors(leaf *Node, dimNodeMap NodeDimensions) ([]*Node, error) {
+func FindNeighbors(leaf *Node, dimensionLookup NodeDimensions) ([]*Node, error) {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
-	dim, err := dimNodeMap.Dimension(leaf)
+	dim, err := dimensionLookup.Dimension(leaf.ID())
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +47,7 @@ func FindNeighbors(leaf *Node, dimNodeMap NodeDimensions) ([]*Node, error) {
 		branch := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 
-		otherDim, err := dimNodeMap.Dimension(branch)
+		otherDim, err := dimensionLookup.Dimension(branch.ID())
 		if err != nil {
 			return nil, err
 		}

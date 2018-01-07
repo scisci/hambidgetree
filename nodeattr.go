@@ -14,18 +14,18 @@ func NewNodeAttributer() *NodeAttributer {
 	}
 }
 
-func (attributer *NodeAttributer) SetAttribute(node *Node, key, value string) {
-	attrs, ok := attributer.attrs[node.id]
+func (attributer *NodeAttributer) SetAttribute(id NodeID, key, value string) {
+	attrs, ok := attributer.attrs[id]
 	if !ok {
 		attrs = make(map[string]string)
-		attributer.attrs[node.id] = attrs
+		attributer.attrs[id] = attrs
 	}
 
 	attrs[key] = value
 }
 
-func (attributer *NodeAttributer) Attribute(node *Node, key string) (string, error) {
-	attrs, ok := attributer.attrs[node.id]
+func (attributer *NodeAttributer) Attribute(id NodeID, key string) (string, error) {
+	attrs, ok := attributer.attrs[id]
 	if !ok {
 		return "", ErrNotFound
 	}

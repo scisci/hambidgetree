@@ -7,7 +7,7 @@ func TestTreeGrid2D(t *testing.T) {
 	leaves := tree.Leaves()
 	dimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1)
 
-	baseDim, _ := dimMap.Dimension(tree.root)
+	baseDim, _ := dimMap.Dimension(tree.root.ID())
 	if baseDim.Width() != 1.0 {
 		t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 	}
@@ -17,7 +17,7 @@ func TestTreeGrid2D(t *testing.T) {
 	}
 
 	for _, leaf := range leaves {
-		dim, _ := dimMap.Dimension(leaf)
+		dim, _ := dimMap.Dimension(leaf.ID())
 		if dim.Width() != 0.25 {
 			t.Errorf("Tree cell width should be 0.25, got %f", dim.Width())
 		}
@@ -68,7 +68,7 @@ func TestTreeGrid3D(t *testing.T) {
 		leaves := tree.Leaves()
 		dimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1)
 
-		baseDim, _ := dimMap.Dimension(tree.root)
+		baseDim, _ := dimMap.Dimension(tree.root.ID())
 		if baseDim.Width() != 1.0 {
 			t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 		}
@@ -82,7 +82,7 @@ func TestTreeGrid3D(t *testing.T) {
 		}
 
 		for _, leaf := range leaves {
-			dim, err := dimMap.Dimension(leaf)
+			dim, err := dimMap.Dimension(leaf.ID())
 			if err != nil {
 				t.Errorf("Failed to get dim %v", err)
 			}

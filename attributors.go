@@ -70,7 +70,7 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 		}
 
 		randomIndex := rand.Intn(len(leaves))
-		attrs.SetAttribute(leaves[randomIndex], HasNeighborAttr, HasNeighborValue)
+		attrs.SetAttribute(leaves[randomIndex].ID(), HasNeighborAttr, HasNeighborValue)
 		leaves = append(leaves[:randomIndex], leaves[randomIndex+1:]...)
 	}
 
@@ -81,7 +81,7 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 	var candidates []*Node
 	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
-		dim, err := nodeDimMap.Dimension(leaves[i])
+		dim, err := nodeDimMap.Dimension(leaves[i].ID())
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +90,7 @@ func getNeighbors(leaves []*Node, nodeDimMap NodeDimensions, epsilon float64) ([
 			if j == i {
 				continue
 			}
-			dim2, err := nodeDimMap.Dimension(leaves[j])
+			dim2, err := nodeDimMap.Dimension(leaves[j].ID())
 			if err != nil {
 				return nil, err
 			}

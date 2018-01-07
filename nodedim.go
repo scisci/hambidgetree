@@ -8,7 +8,7 @@ import (
 var ErrNotFound = errors.New("Not Found")
 
 type NodeDimensions interface {
-	Dimension(node *Node) (*Dimension, error)
+	Dimension(id NodeID) (*Dimension, error)
 }
 
 type DimensionalNode struct {
@@ -169,8 +169,8 @@ func NewNodeDimensionMap(tree *Tree, offset *Vector, scale float64) *NodeDimensi
 	}
 }
 
-func (nodeDimMap NodeDimensionMap) Dimension(node *Node) (*Dimension, error) {
-	if dim, ok := nodeDimMap.lookup[node.id]; !ok {
+func (nodeDimMap NodeDimensionMap) Dimension(id NodeID) (*Dimension, error) {
+	if dim, ok := nodeDimMap.lookup[id]; !ok {
 		return nil, ErrNotFound
 	} else {
 		return dim.Dimension, nil

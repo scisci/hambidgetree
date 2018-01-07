@@ -45,7 +45,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 			t.Errorf("Error finding neighbors %v", err)
 		}
 
-		dim, err := dimMap.Dimension(leaf)
+		dim, err := dimMap.Dimension(leaf.ID())
 		if err != nil {
 			t.Errorf("Error finding dimension of leaf %v", err)
 		}
@@ -65,7 +65,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 				}
 			}
 
-			otherDim, err := dimMap.Dimension(other)
+			otherDim, err := dimMap.Dimension(other.ID())
 			if err != nil {
 				t.Errorf("Error getting dimension of neighbor %v", err)
 			}
@@ -76,5 +76,30 @@ func TestNeighbors3DMeasured(t *testing.T) {
 			}
 		}
 	}
+}
 
+func TestAdjacencyMatrix(t *testing.T) {
+	tree := NewGridTree2D(2)
+	dimensionLookup := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
+	matrix, err := BuildAdjacencyMatrix(tree, dimensionLookup)
+	if err != nil {
+		t.Errorf("Error building adjacency matrix %v", err)
+	}
+
+	leaves := tree.Leaves()
+	if len(matrix) != len(leaves) {
+		t.Errorf("Should have %d items in matrix, got %d", len(leaves), len(matrix))
+	}
+
+	for nodeID, list := range matrix {
+		if len(list) != 3 {
+			t.Errorf("Each node should have 3 neighbors, got %d", len(list))
+		}
+
+		for _, otherNode := range list {
+			if otherNode.ID() == nodeID {
+				t.Errorf("Node has self as neighbor!")
+			}
+		}
+	}
 }
