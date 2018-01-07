@@ -156,6 +156,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 		return err
 	}
 	numLeaves := len(matrix)
+	fmt.Printf("working with %d leaves\n", numLeaves)
 
 	maxID := int64(0)
 	for leafID, _ := range matrix {
