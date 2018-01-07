@@ -75,19 +75,20 @@ type EdgePath struct {
 }
 
 type edgeNode struct {
-	name EdgeName
-	id   int64
-	dim  *Dimension
+	name      EdgeName
+	id        int64
+	dim       *Dimension
+	neighbors []NodeID
 }
 
 func createEdgeNodes(idOffset int64) []*edgeNode {
 	return []*edgeNode{
-		&edgeNode{EdgeNameLeft, idOffset + EdgeNameLeft.Index(), EdgeNameLeft.Dimension3D()},
-		&edgeNode{EdgeNameRight, idOffset + EdgeNameRight.Index(), EdgeNameRight.Dimension3D()},
-		&edgeNode{EdgeNameTop, idOffset + EdgeNameTop.Index(), EdgeNameTop.Dimension3D()},
-		&edgeNode{EdgeNameBottom, idOffset + EdgeNameBottom.Index(), EdgeNameBottom.Dimension3D()},
-		&edgeNode{EdgeNameFront, idOffset + EdgeNameFront.Index(), EdgeNameFront.Dimension3D()},
-		&edgeNode{EdgeNameBack, idOffset + EdgeNameBack.Index(), EdgeNameBack.Dimension3D()},
+		&edgeNode{EdgeNameLeft, idOffset + EdgeNameLeft.Index(), EdgeNameLeft.Dimension3D(), nil},
+		&edgeNode{EdgeNameRight, idOffset + EdgeNameRight.Index(), EdgeNameRight.Dimension3D(), nil},
+		&edgeNode{EdgeNameTop, idOffset + EdgeNameTop.Index(), EdgeNameTop.Dimension3D(), nil},
+		&edgeNode{EdgeNameBottom, idOffset + EdgeNameBottom.Index(), EdgeNameBottom.Dimension3D(), nil},
+		&edgeNode{EdgeNameFront, idOffset + EdgeNameFront.Index(), EdgeNameFront.Dimension3D(), nil},
+		&edgeNode{EdgeNameBack, idOffset + EdgeNameBack.Index(), EdgeNameBack.Dimension3D(), nil},
 	}
 }
 
@@ -173,7 +174,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 	chaos := stepsToValue(attributor.Chaos, attributor.MaxChaos)
 
 	for leafID, neighbors := range matrix {
-		fmt.Printf("leaf %d has %d neighbors\n", leafID, len(neighbors))
+		//fmt.Printf("leaf %d has %d neighbors\n", leafID, len(neighbors))
 
 		for _, neighbor := range neighbors {
 			if graph.HasEdgeBetween(simple.Node(leafID), simple.Node(neighbor.ID())) {
@@ -182,7 +183,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 
 			randWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
 			graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(neighbor.ID()), W: randWeight})
-			fmt.Printf("%d to %d = %f\n", leafID, neighbor.ID(), randWeight)
+			//fmt.Printf("%d to %d = %f\n", leafID, neighbor.ID(), randWeight)
 
 		}
 
@@ -194,36 +195,33 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 
 		for _, e := range edges {
 			if e.dim.DistanceSquared(dim) < 0.0000001 {
-				edgeWeight := 1.0
-				graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(e.id), W: edgeWeight})
+				e.neighbors = append(e.neighbors, leafID)
 			}
 		}
 	}
 
 	for _, path := range attributor.Paths {
-		var fromNode *edgeNode
-		var toNode *edgeNode
+		fromNode := int64(-1)
+		toNode := int64(-1)
 		for _, edge := range edges {
 			if edge.name == path.From {
-				fromNode = edge
+				// Choose a random neighbor
+				fromNode = int64(edge.neighbors[rand.Intn(len(edge.neighbors))])
 			}
 			if edge.name == path.To {
-				toNode = edge
+				toNode = int64(edge.neighbors[rand.Intn(len(edge.neighbors))])
 			}
 		}
-		if fromNode == nil || toNode == nil {
+		if fromNode < 0 || toNode < 0 {
 			panic("path ends not found")
 		}
 
-		shortest := gpath.DijkstraFrom(simple.Node(fromNode.id), graph)
-		p, w := shortest.To(simple.Node(toNode.id))
+		shortest := gpath.DijkstraFrom(simple.Node(fromNode), graph)
+		p, w := shortest.To(simple.Node(toNode))
 		fmt.Printf("path weight %f\n", w)
 
-		for i, graphNode := range p {
-			fmt.Printf("- %d\n", graphNode.ID())
-			if i > 0 && i < len(p)-1 {
-				attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
-			}
+		for _, graphNode := range p {
+			attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
 		}
 	}
 
