@@ -180,7 +180,8 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 			}
 
 			randWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
-			graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(neighbor.id), W: randWeight})
+			graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(neighbor.ID()), W: randWeight})
+			fmt.Printf("%d to %d = %f", leafID, neighbor.ID(), randWeight)
 
 		}
 
