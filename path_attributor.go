@@ -171,24 +171,25 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 
 	for leafID, neighbors := range matrix {
 		for _, neighbor := range neighbors {
-			if graph.HasEdgeBetween(simple.Node(leafID), simple.Node(neighbor.id)) {
+			if graph.HasEdgeBetween(simple.Node(leafID), simple.Node(neighbor.ID())) {
 				continue
 			}
 
 			randWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
 			graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(neighbor.id), W: randWeight})
 
-			// Also need to check this neighbor against the edges
-			dim, err := dimensionLookup.Dimension(leafID)
-			if err != nil {
-				return err
-			}
+		}
 
-			for _, e := range edges {
-				if e.dim.DistanceSquared(dim) < 0.0000001 {
-					edgeWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
-					graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(e.id), W: edgeWeight})
-				}
+		// Also need to check this neighbor against the edges
+		dim, err := dimensionLookup.Dimension(leafID)
+		if err != nil {
+			return err
+		}
+
+		for _, e := range edges {
+			if e.dim.DistanceSquared(dim) < 0.0000001 {
+				edgeWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
+				graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(e.id), W: edgeWeight})
 			}
 		}
 	}
@@ -211,8 +212,10 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 		shortest := gpath.DijkstraFrom(simple.Node(fromNode.id), graph)
 		p, _ := shortest.To(simple.Node(toNode.id))
 
-		for _, graphNode := range p {
-			attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
+		for i, graphNode := range p {
+			if i > 0 && i < len(p)-1 {
+				attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
+			}
 		}
 	}
 
