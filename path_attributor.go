@@ -188,7 +188,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 
 		for _, e := range edges {
 			if e.dim.DistanceSquared(dim) < 0.0000001 {
-				edgeWeight := 1 + chaos*rand.Float64()*float64(numLeaves)
+				edgeWeight := 1.0
 				graph.SetWeightedEdge(&simple.WeightedEdge{F: simple.Node(leafID), T: simple.Node(e.id), W: edgeWeight})
 			}
 		}
