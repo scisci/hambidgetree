@@ -35,7 +35,15 @@ func TestNeighbors3D(t *testing.T) {
 }
 
 func TestNeighbors3DMeasured(t *testing.T) {
-	tree := NewGridTree3D(6)
+	ratios := NewGoldenRatios()
+	treeRatios := NewTreeRatios(ratios, 0.0000001)
+	numLeaves := 10
+	gen := NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 543543)
+	tree, err := gen.Generate()
+	if err != nil {
+		t.Errorf("Error generating tree %v", err)
+	}
+
 	dimMap := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
 	leaves := tree.Leaves()
 

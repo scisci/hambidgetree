@@ -48,6 +48,7 @@ func (name EdgeName) Index() int64 {
 	return int64(name)
 }
 
+// TODO: These won't be right for trees created with different aspect ratios!
 func (name EdgeName) Dimension3D() *Dimension {
 	switch name {
 	case EdgeNameLeft:
@@ -213,7 +214,8 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 		}
 
 		shortest := gpath.DijkstraFrom(simple.Node(fromNode.id), graph)
-		p, _ := shortest.To(simple.Node(toNode.id))
+		p, w := shortest.To(simple.Node(toNode.id))
+		fmt.Printf("path weight %f\n", w)
 
 		for i, graphNode := range p {
 			if i > 0 && i < len(p)-1 {
