@@ -1,7 +1,7 @@
 package hambidgetree
 
 type NodeAttributes interface {
-	Attribute(node *Node, key string) (string, error)
+	Attribute(id NodeID, key string) (string, error)
 }
 
 type NodeAttributer struct {
