@@ -220,6 +220,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 		fmt.Printf("path weight %f\n", w)
 
 		for i, graphNode := range p {
+			fmt.Printf("- %d\n", graphNode.ID())
 			if i > 0 && i < len(p)-1 {
 				attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
 			}
