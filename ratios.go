@@ -192,7 +192,8 @@ func NewComplements(ratios Ratios, epsilon float64) Complements {
 						invK := FindInverseRatioIndex(ratios, k, epsilon)
 
 						if invJ < 0 || invK < 0 {
-							panic("inverse ratio lookup failed " + strconv.Itoa(j) + ":" + strconv.Itoa(invJ) + ", " + strconv.Itoa(k) + ":" + strconv.Itoa(invK))
+							panic("inverse ratio lookup failed " + strconv.Itoa(j) + ":" +
+								strconv.Itoa(invJ) + ", " + strconv.Itoa(k) + ":" + strconv.Itoa(invK))
 						}
 
 						top, bot := invJ, invK

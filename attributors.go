@@ -33,7 +33,9 @@ func (attributor *HasNeighborAttributor) Name() string {
 }
 
 func (attributor *HasNeighborAttributor) Description() string {
-	return "This attributor finds all of the leaves that have at least one neighbor touching on either side, then chooses a random one and marks it. Once marked, the leaf is considered 'deleted.'"
+	return "This attributor finds all of the leaves that have at least " +
+		"one neighbor touching on either side, then chooses a random one and " +
+		"marks it. Once marked, the leaf is considered 'deleted.'"
 }
 
 func (attributor *HasNeighborAttributor) Parameters(f ParameterFormatType) map[string]interface{} {
@@ -52,7 +54,7 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree *Tree, attrs *NodeAt
 	leaves := tree.Leaves()
 
 	// Get the dimension list
-	nodeDimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1.0)
+	nodeDimMap := NewNodeDimensionMap(tree, Origin, UnityScale)
 
 	var err error
 

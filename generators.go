@@ -143,7 +143,6 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 				//fmt.Printf("tried to split h ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, zyRatioTop, zyRatioBottom, zyRatioBottom)
 				//panic("right invalid")
 			}
-			// TODO: do we need to check the right as well? or is it guaranteed
 		} else if xySplit.IsVertical() {
 			cutWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.LeftIndex()))
 			compWidth := RatioNormalWidth(xyRatio, leaf.tree.Ratio(xySplit.RightIndex()))
@@ -160,7 +159,6 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 				//fmt.Printf("tried to split v ratio (xy:%f, xz:%f, zy:%f) with width %f from ratio %f against xz %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatio, zyRatio, cutWidth, leaf.tree.Ratio(xySplit.LeftIndex()), xzRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
 				//panic("right invalid")
 			}
-			// TODO: do we need to check the right as well?
 		} else {
 			panic("What type?")
 		}
@@ -188,7 +186,6 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf *DimensionalNode, compl
 			//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
 			//panic("right invalid")
 		}
-		// TODO: do we need to check the right as well?
 		splits = append(splits, NewDepthSplit(zySplit.LeftIndex(), zySplit.RightIndex()))
 	}
 
@@ -228,7 +225,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 	leafCount := 1
 
 	leafDims := []*DimensionalNode{
-		NewDimensionalNodeFromTree(tree, &Vector{0, 0, 0}, 1.0),
+		NewDimensionalNodeFromTree(tree, Origin, UnityScale),
 	}
 
 	for {
@@ -236,7 +233,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 			break
 		}
 
-		it := NewDimensionalIterator(tree, &Vector{0, 0, 0}, 1.0) // NewDimensionalIteratorFromLeaves(leafDims)
+		it := NewDimensionalIterator(tree, Origin, UnityScale) // NewDimensionalIteratorFromLeaves(leafDims)
 
 		leafDims = leafDims[:0]
 		for it.HasNext() {
@@ -268,7 +265,8 @@ func (gen *RandomBasicTreeGenerator) Generate() (*Tree, error) {
 		*/
 
 		if len(filteredLeaves) == 0 {
-			return nil, errors.New("Unable to reach desired number of leaves (" + strconv.Itoa(gen.NumLeaves) + "), got " + strconv.Itoa(leafCount) + ".")
+			return nil, errors.New("Unable to reach desired number of leaves (" +
+				strconv.Itoa(gen.NumLeaves) + "), got " + strconv.Itoa(leafCount) + ".")
 		}
 
 		// Choose a leaf at random

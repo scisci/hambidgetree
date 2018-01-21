@@ -7,6 +7,10 @@ import (
 
 var ErrNotFound = errors.New("Not Found")
 
+var Origin = &Vector{0.0, 0.0, 0.0}
+
+const UnityScale = 1.0
+
 type NodeDimensions interface {
 	Dimension(id NodeID) (*Dimension, error)
 }

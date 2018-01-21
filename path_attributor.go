@@ -151,7 +151,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 	rand.Seed(attributor.Seed)
 	//epsilon := 0.0000001
 
-	dimensionLookup := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
+	dimensionLookup := NewNodeDimensionMap(tree, Origin, UnityScale)
 	matrix, err := BuildAdjacencyMatrix(tree, dimensionLookup)
 	if err != nil {
 		return err

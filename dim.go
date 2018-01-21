@@ -40,7 +40,9 @@ func NewDimension3D(left, top, front, right, bottom, back float64) *Dimension {
 }
 
 func (dim *Dimension) Clone() *Dimension {
-	return NewDimension3D(dim.x.start, dim.y.start, dim.z.start, dim.x.end, dim.y.end, dim.z.end)
+	return NewDimension3D(
+		dim.x.start, dim.y.start, dim.z.start,
+		dim.x.end, dim.y.end, dim.z.end)
 }
 
 func (dim *Dimension) Is3D() bool {
@@ -48,7 +50,8 @@ func (dim *Dimension) Is3D() bool {
 }
 
 func (dim *Dimension) String() string {
-	return fmt.Sprintf("Dim{%.2f, %.2f, %.2f, %.2f}", dim.Left(), dim.Top(), dim.Width(), dim.Height())
+	return fmt.Sprintf("Dim{%.2f, %.2f, %.2f, %.2f}",
+		dim.Left(), dim.Top(), dim.Width(), dim.Height())
 }
 
 func (dim *Dimension) Left() float64 {
