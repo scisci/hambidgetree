@@ -6,8 +6,7 @@ var GoldenRatio = math.Sqrt(5)/2 + 0.5 // Equivalent to math.Phi
 var SquareRatio = 1.0
 var RootFiveRatio = math.Sqrt(5)
 
-/*
-func NewGoldenRatios() Ratios {
+func NewGoldenRatiosRaw() Ratios {
 	return NewRatios([]float64{
 		0.125, // 0.125 1/2 of 0.25
 		1 / (math.Sqrt(5) + 5),              // 0.138 1/2 of 0.276
@@ -104,7 +103,6 @@ func NewGoldenRatios() Ratios {
 		8,
 	})
 }
-*/
 
 func NewGoldenRatios() Ratios {
 	return NewExprRatios([]string{
