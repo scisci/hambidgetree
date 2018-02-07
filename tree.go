@@ -1,11 +1,16 @@
 package hambidgetree
 
+// Serialize this like so
+//
+// ratios: (tree.ratios.ratios) // should marshal themselves with some kind of type flag, if strings, then expressions, otherwise floats
+// xyRatioIndex:
+// zyRatioIndex:
+// splits: h|v|d(leftIndex){hvd(index){}{}}{}
 type Tree struct {
 	uniqueId     NodeID
 	ratios       TreeRatios
 	xyRatioIndex int
 	zyRatioIndex int
-	scale        float64
 	root         *Node
 	epsilon      float64
 }
@@ -28,7 +33,6 @@ func NewTree(ratios TreeRatios, xyRatioIndex int, zyRatioIndex int) *Tree {
 		ratios:       ratios,
 		xyRatioIndex: xyRatioIndex,
 		zyRatioIndex: zyRatioIndex,
-		scale:        1.0,
 		epsilon:      CalculateRatiosEpsilon(ratios.Ratios()),
 	}
 

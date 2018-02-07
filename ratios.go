@@ -4,12 +4,17 @@ import "math"
 import "sort"
 import "strconv"
 import "bytes"
+import "github.com/scisci/hambidgetree/expr"
+
+// Use something like this calc package to store expressions as ratios
+// https://github.com/marcmak/calc/
 
 type Complements [][]Split
 
 type Ratios interface {
 	Len() int
 	At(index int) float64
+	Expr(index int) string
 }
 
 func RatiosParameterString(ratios Ratios) string {
@@ -42,6 +47,43 @@ func (ratios rawRatios) At(index int) float64 {
 	return ratios[index]
 }
 
+func (ratios rawRatios) Expr(index int) string {
+	return strconv.FormatFloat(ratios[index], 'f', -1, 64)
+}
+
+type exprRatios []string
+
+func (ratios exprRatios) Len() int {
+	return len(ratios)
+}
+
+func (ratios exprRatios) At(index int) float64 {
+	return expr.Solve(ratios[index])
+}
+
+func (ratios exprRatios) Expr(index int) string {
+	return ratios[index]
+}
+
+type cachedExpr struct {
+	value      float64
+	expression string
+}
+
+type cachedExprRatios []cachedExpr
+
+func (a cachedExprRatios) Len() int           { return len(a) }
+func (a cachedExprRatios) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a cachedExprRatios) Less(i, j int) bool { return a[i].value < a[j].value }
+
+func (ratios cachedExprRatios) At(index int) float64 {
+	return ratios[index].value
+}
+
+func (ratios cachedExprRatios) Expr(index int) string {
+	return ratios[index].expression
+}
+
 type ratioSubset struct {
 	ratios  Ratios
 	indexes []int
@@ -53,6 +95,10 @@ func (ratios *ratioSubset) Len() int {
 
 func (ratios *ratioSubset) At(index int) float64 {
 	return ratios.ratios.At(ratios.indexes[index])
+}
+
+func (ratios *ratioSubset) Expr(index int) string {
+	return ratios.ratios.Expr(ratios.indexes[index])
 }
 
 type treeRatios struct {
@@ -130,6 +176,18 @@ func NewRatios(values []float64) Ratios {
 	copy(ratios, values)
 	sort.Float64s(ratios)
 	return rawRatios(ratios)
+}
+
+func NewExprRatios(values []string) Ratios {
+	exprs := make([]cachedExpr, len(values))
+	for i, expression := range values {
+		value := expr.Solve(expression)
+		exprs[i] = cachedExpr{value: value, expression: expression}
+	}
+
+	res := cachedExprRatios(exprs)
+	sort.Sort(res)
+	return res
 }
 
 func NewRatiosSubset(ratios Ratios, values []float64, epsilon float64) Ratios {
