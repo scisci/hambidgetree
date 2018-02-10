@@ -1,15 +1,18 @@
-package hambidgetree
+package neighbor
 
-import "testing"
-import "sort"
+import (
+	htree "github.com/scisci/hambidgetree"
+	"sort"
+	"testing"
+)
 
-type nodeListByID []*Node
+type nodeListByID []*htree.Node
 
 func (a nodeListByID) Len() int           { return len(a) }
 func (a nodeListByID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a nodeListByID) Less(i, j int) bool { return a[i].id < a[j].id }
+func (a nodeListByID) Less(i, j int) bool { return a[i].ID() < a[j].ID() }
 
-func arrayContentsEqual(arr1, arr2 []*Node) bool {
+func arrayContentsEqual(arr1, arr2 []*htree.Node) bool {
 	if len(arr1) != len(arr2) {
 		return false
 	}
@@ -27,10 +30,10 @@ func arrayContentsEqual(arr1, arr2 []*Node) bool {
 }
 
 func TestGetNeighbors(t *testing.T) {
-	tree := NewGridTree2D(2) // Create a tree with 4 squares
+	tree := htree.NewGridTree2D(2) // Create a tree with 4 squares
 	leaves := tree.Leaves()
 	epsilon := 0.0000001
-	nodeDimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1.0)
+	nodeDimMap := htree.NewNodeDimensionMap(tree, htree.Origin, 1.0)
 	neighbors, err := getNeighbors(leaves, nodeDimMap, epsilon)
 	if err != nil {
 		t.Errorf("Error getting neighbors (%v)", err)

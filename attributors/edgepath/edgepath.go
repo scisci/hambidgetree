@@ -1,8 +1,12 @@
-package hambidgetree
+package edgepath
 
 import (
 	"bytes"
 	"fmt"
+	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
+	"github.com/scisci/hambidgetree/attributors"
+	"github.com/scisci/hambidgetree/stepped"
 	gpath "gonum.org/v1/gonum/graph/path"
 	"gonum.org/v1/gonum/graph/simple"
 	"math"
@@ -49,20 +53,20 @@ func (name EdgeName) Index() int64 {
 }
 
 // TODO: These won't be right for trees created with different aspect ratios!
-func (name EdgeName) Dimension3D() *Dimension {
+func (name EdgeName) Dimension3D() *htree.Dimension {
 	switch name {
 	case EdgeNameLeft:
-		return NewDimension3D(0, 0, 0, 0, 1, 1)
+		return htree.NewDimension3D(0, 0, 0, 0, 1, 1)
 	case EdgeNameRight:
-		return NewDimension3D(1, 0, 0, 1, 1, 1)
+		return htree.NewDimension3D(1, 0, 0, 1, 1, 1)
 	case EdgeNameTop:
-		return NewDimension3D(0, 0, 0, 1, 0, 1)
+		return htree.NewDimension3D(0, 0, 0, 1, 0, 1)
 	case EdgeNameBottom:
-		return NewDimension3D(0, 1, 0, 1, 1, 1)
+		return htree.NewDimension3D(0, 1, 0, 1, 1, 1)
 	case EdgeNameFront:
-		return NewDimension3D(0, 0, 0, 1, 1, 0)
+		return htree.NewDimension3D(0, 0, 0, 1, 1, 0)
 	case EdgeNameBack:
-		return NewDimension3D(0, 0, 1, 1, 1, 1)
+		return htree.NewDimension3D(0, 0, 1, 1, 1, 1)
 	}
 
 	panic("unknown edge name!")
@@ -77,8 +81,8 @@ type EdgePath struct {
 type edgeNode struct {
 	name      EdgeName
 	id        int64
-	dim       *Dimension
-	neighbors []NodeID
+	dim       *htree.Dimension
+	neighbors []htree.NodeID
 }
 
 func createEdgeNodes(idOffset int64) []*edgeNode {
@@ -125,34 +129,17 @@ func NewEdgePathAttributor(paths []EdgePath, seed int64, chaos float64) *EdgePat
 	return &EdgePathAttributor{
 		Paths:    paths,
 		Seed:     seed,
-		Chaos:    valueToSteps(chaos, edgePathMaxChaos),
+		Chaos:    stepped.ValueToSteps(chaos, edgePathMaxChaos),
 		MaxChaos: edgePathMaxChaos,
 	}
 }
 
-func (attributor *EdgePathAttributor) Name() string {
-	return "EdgePath"
-}
-
-func (attributor *EdgePathAttributor) Description() string {
-	return "This attributor finds a path between the edges and marks each item along that path with the attribute."
-}
-
-func (attributor *EdgePathAttributor) Parameters(f ParameterFormatType) map[string]interface{} {
-	return map[string]interface{}{
-		"Paths":    edgePathParams(attributor.Paths),
-		"Seed":     attributor.Seed,
-		"Chaos":    attributor.Chaos,
-		"MaxChaos": attributor.MaxChaos,
-	}
-}
-
-func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttributer) error {
+func (attributor *EdgePathAttributor) AddAttributes(tree *htree.Tree, attrs *attributors.NodeAttributer) error {
 	rand.Seed(attributor.Seed)
 	//epsilon := 0.0000001
 
-	dimensionLookup := NewNodeDimensionMap(tree, Origin, UnityScale)
-	matrix, err := BuildAdjacencyMatrix(tree, dimensionLookup)
+	dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
+	matrix, err := algo.BuildAdjacencyMatrix(tree, dimensionLookup)
 	if err != nil {
 		return err
 	}
@@ -171,7 +158,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 	graph := simple.NewWeightedUndirectedGraph(0, math.Inf(1))
 
 	// Value 0 to 1, 0 is a shortest path (distance 1) 1, is complete noise (distance is rand * numleaves)
-	chaos := stepsToValue(attributor.Chaos, attributor.MaxChaos)
+	chaos := stepped.StepsToValue(attributor.Chaos, attributor.MaxChaos)
 
 	for leafID, neighbors := range matrix {
 		//fmt.Printf("leaf %d has %d neighbors\n", leafID, len(neighbors))
@@ -221,7 +208,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree *Tree, attrs *NodeAttri
 		fmt.Printf("path weight %f\n", w)
 
 		for _, graphNode := range p {
-			attrs.SetAttribute(NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
+			attrs.SetAttribute(htree.NodeID(graphNode.ID()), OnPathAttr, OnPathValue)
 		}
 	}
 

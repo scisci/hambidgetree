@@ -1,14 +1,19 @@
-package hambidgetree
+package algo_test
 
-import "testing"
+import (
+	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
+	"github.com/scisci/hambidgetree/generators/randombasic"
+	"testing"
+)
 
 func TestNeighbors2D(t *testing.T) {
-	tree := NewGridTree2D(2)
-	dimMap := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
+	tree := htree.NewGridTree2D(2)
+	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
 
-	neighbors, err := FindNeighbors(leaf, dimMap)
+	neighbors, err := algo.FindNeighbors(leaf, dimMap)
 	if err != nil {
 		t.Errorf("Error finding neighbors %v", err)
 	}
@@ -19,12 +24,12 @@ func TestNeighbors2D(t *testing.T) {
 }
 
 func TestNeighbors3D(t *testing.T) {
-	tree := NewGridTree3D(3)
-	dimMap := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
+	tree := htree.NewGridTree3D(3)
+	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
 
-	neighbors, err := FindNeighbors(leaf, dimMap)
+	neighbors, err := algo.FindNeighbors(leaf, dimMap)
 	if err != nil {
 		t.Errorf("Error finding neighbors %v", err)
 	}
@@ -35,20 +40,20 @@ func TestNeighbors3D(t *testing.T) {
 }
 
 func TestNeighbors3DMeasured(t *testing.T) {
-	ratios := NewGoldenRatios()
-	treeRatios := NewTreeRatios(ratios, 0.0000001)
+	ratios := htree.NewGoldenRatios()
+	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 10
-	gen := NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 543543)
+	gen := randombasic.NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 543543)
 	tree, err := gen.Generate()
 	if err != nil {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	dimMap := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
+	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 
 	for _, leaf := range leaves {
-		neighbors, err := FindNeighbors(leaf, dimMap)
+		neighbors, err := algo.FindNeighbors(leaf, dimMap)
 		if err != nil {
 			t.Errorf("Error finding neighbors %v", err)
 		}
@@ -87,9 +92,9 @@ func TestNeighbors3DMeasured(t *testing.T) {
 }
 
 func TestAdjacencyMatrix(t *testing.T) {
-	tree := NewGridTree2D(2)
-	dimensionLookup := NewNodeDimensionMap(tree, NewVector(0, 0, 0), 1.0)
-	matrix, err := BuildAdjacencyMatrix(tree, dimensionLookup)
+	tree := htree.NewGridTree2D(2)
+	dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
+	matrix, err := algo.BuildAdjacencyMatrix(tree, dimensionLookup)
 	if err != nil {
 		t.Errorf("Error building adjacency matrix %v", err)
 	}

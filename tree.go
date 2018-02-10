@@ -5,7 +5,8 @@ package hambidgetree
 // ratios: (tree.ratios.ratios) // should marshal themselves with some kind of type flag, if strings, then expressions, otherwise floats
 // xyRatioIndex:
 // zyRatioIndex:
-// splits: h|v|d(leftIndex){hvd(index){}{}}{}
+// root: id
+// node: [id: id, split: hvd, index, left: id, right: id]
 type Tree struct {
 	uniqueId     NodeID
 	ratios       TreeRatios
@@ -56,6 +57,10 @@ func (tree *Tree) RatioIndex(node *Node, plane RatioPlane) int {
 	}
 
 	return node.RatioIndex()
+}
+
+func (tree *Tree) Ratios() Ratios {
+	return tree.ratios.Ratios()
 }
 
 func (tree *Tree) Ratio(ratioIndex int) float64 {

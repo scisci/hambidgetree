@@ -1,20 +1,24 @@
-package hambidgetree
+package attributors
+
+import (
+	htree "github.com/scisci/hambidgetree"
+)
 
 type NodeAttributes interface {
-	Attribute(id NodeID, key string) (string, error)
+	Attribute(id htree.NodeID, key string) (string, error)
 }
 
 type NodeAttributer struct {
-	attrs map[NodeID]map[string]string
+	attrs map[htree.NodeID]map[string]string
 }
 
 func NewNodeAttributer() *NodeAttributer {
 	return &NodeAttributer{
-		attrs: make(map[NodeID]map[string]string),
+		attrs: make(map[htree.NodeID]map[string]string),
 	}
 }
 
-func (attributer *NodeAttributer) SetAttribute(id NodeID, key, value string) {
+func (attributer *NodeAttributer) SetAttribute(id htree.NodeID, key, value string) {
 	attrs, ok := attributer.attrs[id]
 	if !ok {
 		attrs = make(map[string]string)
@@ -24,7 +28,7 @@ func (attributer *NodeAttributer) SetAttribute(id NodeID, key, value string) {
 	attrs[key] = value
 }
 
-func (attributer *NodeAttributer) Attribute(id NodeID, key string) (string, error) {
+func (attributer *NodeAttributer) Attribute(id htree.NodeID, key string) (string, error) {
 	attrs, ok := attributer.attrs[id]
 	if !ok {
 		return "", ErrNotFound

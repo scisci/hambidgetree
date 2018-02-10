@@ -1,24 +1,12 @@
-package hambidgetree
+package algo
 
-func BuildAdjacencyMatrix(tree *Tree, dimensionLookup NodeDimensions) (map[NodeID][]*Node, error) {
-
-	leaves := tree.Leaves()
-
-	matrix := make(map[NodeID][]*Node)
-
-	for _, leaf := range leaves {
-		neighbors, err := FindNeighbors(leaf, dimensionLookup)
-		if err != nil {
-			return nil, err
-		}
-		matrix[leaf.id] = neighbors
-	}
-	return matrix, nil
-}
+import (
+	htree "github.com/scisci/hambidgetree"
+)
 
 // Go up the tree and select all 'other' leaves, then recursively visit any
 // branches that intersect our leaf until we find leaves that intersect
-func FindNeighbors(leaf *Node, dimensionLookup NodeDimensions) ([]*Node, error) {
+func FindNeighbors(leaf *htree.Node, dimensionLookup htree.NodeDimensions) ([]*htree.Node, error) {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
 	dim, err := dimensionLookup.Dimension(leaf.ID())
@@ -26,21 +14,21 @@ func FindNeighbors(leaf *Node, dimensionLookup NodeDimensions) ([]*Node, error) 
 		return nil, err
 	}
 
-	var neighbors []*Node
+	var neighbors []*htree.Node
 
 	epsilon := 0.0000001
 
 	ref := leaf
-	parent := ref.parent
-	var stack []*Node
+	parent := ref.Parent()
+	var stack []*htree.Node
 	for parent != nil {
-		other := parent.left
+		other := parent.Left()
 		if other == ref {
-			other = parent.right
+			other = parent.Right()
 		}
 		stack = append(stack, other)
 		ref = parent
-		parent = ref.parent
+		parent = ref.Parent()
 	}
 
 	for len(stack) > 0 {

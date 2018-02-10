@@ -45,6 +45,10 @@ func (node *Node) Divide(split Split) {
 	node.right = NewNode(node.tree, node)
 }
 
+func (node *Node) Parent() *Node {
+	return node.parent
+}
+
 func (node *Node) Left() *Node {
 	return node.left
 }

@@ -1,11 +1,14 @@
-package hambidgetree
+package randombasic
 
-import "testing"
-import "fmt"
+import (
+	"fmt"
+	htree "github.com/scisci/hambidgetree"
+	"testing"
+)
 
 func TestGenerator2D(t *testing.T) {
-	ratios := NewRatios([]float64{0.5, 1.0})
-	treeRatios := NewTreeRatios(ratios, 0.0000001)
+	ratios := htree.NewRatios([]float64{0.5, 1.0})
+	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 3
 	gen := NewRandomBasicTreeGenerator(treeRatios, 1, numLeaves, 1)
 	tree, err := gen.Generate()
@@ -19,13 +22,13 @@ func TestGenerator2D(t *testing.T) {
 	}
 
 	fmt.Println("Test2D")
-	it := NewNodeIterator(tree.root)
+	it := htree.NewNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
 		fmt.Printf("Node{%d, %v}\n", node.ID(), node.Split())
 	}
 
-	dit := NewDimensionalIterator(tree, &Vector{0, 0, 0}, 1.0)
+	dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
 	for dit.HasNext() {
 		dn := dit.Next()
 		fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
@@ -33,8 +36,8 @@ func TestGenerator2D(t *testing.T) {
 }
 
 func TestGenerator3D(t *testing.T) {
-	ratios := NewGoldenRatios()
-	treeRatios := NewTreeRatios(ratios, 0.0000001)
+	ratios := htree.NewGoldenRatios()
+	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 50
 	gen := NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 1)
 	tree, err := gen.Generate()
@@ -54,7 +57,7 @@ func TestGenerator3D(t *testing.T) {
 			fmt.Printf("Node{%d, %v}\n", node.ID(), node.Split())
 		}
 	*/
-	dit := NewDimensionalIterator(tree, &Vector{0, 0, 0}, 1.0)
+	dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
 	for dit.HasNext() {
 		dn := dit.Next()
 		//fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
