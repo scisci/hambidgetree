@@ -11,7 +11,7 @@ func TestGenerator2D(t *testing.T) {
 	ratios := htree.NewRatios([]float64{0.5, 1.0})
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 3
-	gen := NewRandomBasicTreeGenerator(treeRatios, 1, numLeaves, 1)
+	gen := New(treeRatios, 1, numLeaves, 1)
 	tree, err := gen.Generate()
 	if err != nil {
 		t.Errorf("Error generating tree %v", err)
@@ -40,7 +40,7 @@ func TestGenerator3D(t *testing.T) {
 	ratios := golden.Ratios()
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 50
-	gen := NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 1)
+	gen := New3D(treeRatios, 1, 1, numLeaves, 1)
 	tree, err := gen.Generate()
 	if err != nil {
 		t.Errorf("Error generating tree %v", err)

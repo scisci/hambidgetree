@@ -31,7 +31,7 @@ func arrayContentsEqual(arr1, arr2 []*htree.Node) bool {
 }
 
 func TestGetNeighbors(t *testing.T) {
-	tree := grid.NewGridTree2D(2) // Create a tree with 4 squares
+	tree := grid.New2D(2) // Create a tree with 4 squares
 	leaves := tree.Leaves()
 	epsilon := 0.0000001
 	nodeDimMap := htree.NewNodeDimensionMap(tree, htree.Origin, 1.0)

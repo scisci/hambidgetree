@@ -8,7 +8,7 @@ import (
 // square
 // Even levels split all leaves in half using a vertical line
 // Odd levels split those splits in half with a horizontal line creating squares again
-func NewGridTree2D(levels int) *htree.Tree {
+func New2D(levels int) *htree.Tree {
 	ratios := htree.NewRatios([]float64{0.5, 1.0})
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 
@@ -31,7 +31,7 @@ func NewGridTree2D(levels int) *htree.Tree {
 	return tree
 }
 
-func NewGridTree3D(levels int) *htree.Tree {
+func New3D(levels int) *htree.Tree {
 	ratios := htree.NewRatios([]float64{0.5, 1.0})
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 

@@ -7,7 +7,7 @@ import (
 )
 
 func TestTreeGrid2D(t *testing.T) {
-	tree := grid.NewGridTree2D(4)
+	tree := grid.New2D(4)
 	leaves := tree.Leaves()
 	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 
@@ -68,7 +68,7 @@ var grid3DTests = []struct {
 
 func TestTreeGrid3D(t *testing.T) {
 	for _, test := range grid3DTests {
-		tree := grid.NewGridTree3D(test.levels)
+		tree := grid.New3D(test.levels)
 		leaves := tree.Leaves()
 		dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 

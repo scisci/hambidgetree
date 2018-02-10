@@ -10,7 +10,7 @@ import (
 )
 
 func TestNeighbors2D(t *testing.T) {
-	tree := grid.NewGridTree2D(2)
+	tree := grid.New2D(2)
 	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
@@ -26,7 +26,7 @@ func TestNeighbors2D(t *testing.T) {
 }
 
 func TestNeighbors3D(t *testing.T) {
-	tree := grid.NewGridTree3D(3)
+	tree := grid.New3D(3)
 	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
@@ -45,7 +45,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 	ratios := golden.Ratios()
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 10
-	gen := randombasic.NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 543543)
+	gen := randombasic.New3D(treeRatios, 1, 1, numLeaves, 543543)
 	tree, err := gen.Generate()
 	if err != nil {
 		t.Errorf("Error generating tree %v", err)
@@ -94,7 +94,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 }
 
 func TestAdjacencyMatrix(t *testing.T) {
-	tree := grid.NewGridTree2D(2)
+	tree := grid.New2D(2)
 	dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	matrix, err := algo.BuildAdjacencyMatrix(tree, dimensionLookup)
 	if err != nil {

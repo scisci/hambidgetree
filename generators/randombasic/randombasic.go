@@ -20,7 +20,7 @@ type leafSplits struct {
 	splits []htree.Split
 }
 
-func NewRandomBasicTreeGenerator(ratios htree.TreeRatios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New(ratios htree.TreeRatios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
 	return &RandomBasicTreeGenerator{
 		Ratios:    ratios,
 		XYRatio:   containerRatio,
@@ -29,7 +29,7 @@ func NewRandomBasicTreeGenerator(ratios htree.TreeRatios, containerRatio float64
 	}
 }
 
-func NewRandomBasic3DTreeGenerator(ratios htree.TreeRatios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New3D(ratios htree.TreeRatios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
 	return &RandomBasicTreeGenerator{
 		Ratios:    ratios,
 		XYRatio:   xyRatio,
