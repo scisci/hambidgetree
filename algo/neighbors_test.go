@@ -3,12 +3,13 @@ package algo_test
 import (
 	htree "github.com/scisci/hambidgetree"
 	"github.com/scisci/hambidgetree/algo"
+	"github.com/scisci/hambidgetree/generators/grid"
 	"github.com/scisci/hambidgetree/generators/randombasic"
 	"testing"
 )
 
 func TestNeighbors2D(t *testing.T) {
-	tree := htree.NewGridTree2D(2)
+	tree := grid.NewGridTree2D(2)
 	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
@@ -24,7 +25,7 @@ func TestNeighbors2D(t *testing.T) {
 }
 
 func TestNeighbors3D(t *testing.T) {
-	tree := htree.NewGridTree3D(3)
+	tree := grid.NewGridTree3D(3)
 	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	leaves := tree.Leaves()
 	leaf := leaves[0]
@@ -92,7 +93,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 }
 
 func TestAdjacencyMatrix(t *testing.T) {
-	tree := htree.NewGridTree2D(2)
+	tree := grid.NewGridTree2D(2)
 	dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	matrix, err := algo.BuildAdjacencyMatrix(tree, dimensionLookup)
 	if err != nil {

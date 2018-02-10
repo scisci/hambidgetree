@@ -1,13 +1,17 @@
-package hambidgetree
+package hambidgetree_test
 
-import "testing"
+import (
+	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/generators/grid"
+	"testing"
+)
 
 func TestTreeGrid2D(t *testing.T) {
-	tree := NewGridTree2D(4)
+	tree := grid.NewGridTree2D(4)
 	leaves := tree.Leaves()
-	dimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1)
+	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 
-	baseDim, _ := dimMap.Dimension(tree.root.ID())
+	baseDim, _ := dimMap.Dimension(tree.Root().ID())
 	if baseDim.Width() != 1.0 {
 		t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 	}
@@ -64,11 +68,11 @@ var grid3DTests = []struct {
 
 func TestTreeGrid3D(t *testing.T) {
 	for _, test := range grid3DTests {
-		tree := NewGridTree3D(test.levels)
+		tree := grid.NewGridTree3D(test.levels)
 		leaves := tree.Leaves()
-		dimMap := NewNodeDimensionMap(tree, &Vector{0, 0, 0}, 1)
+		dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 
-		baseDim, _ := dimMap.Dimension(tree.root.ID())
+		baseDim, _ := dimMap.Dimension(tree.Root().ID())
 		if baseDim.Width() != 1.0 {
 			t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 		}
