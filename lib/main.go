@@ -1,31 +1,48 @@
 package main
 
 import "C"
+
 import (
 	"fmt"
-	"math"
-	"sort"
+	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/golden"
 	"sync"
 )
 
-var count int
-var mtx sync.Mutex
+var ratioRegistryMu sync.Mutex
+var ratioRegistryIndex = 0
+var ratioRegistry = make(map[int]htree.Ratios)
 
-//export Add
-func Add(a, b int) int { return a + b }
-
-//export Cosine
-func Cosine(x float64) float64 { return math.Cos(x) }
-
-//export Sort
-func Sort(vals []int) { sort.Ints(vals) }
-
-//export Log
-func Log(msg string) int {
-	mtx.Lock()
-	defer mtx.Unlock()
-	fmt.Println(msg)
-	count++
-	return count
+//export CreateGoldenRatios
+func CreateGoldenRatios() int {
+	return registerRatios(golden.Ratios())
 }
+
+//export ReleaseRatios
+func ReleaseRatios(index int) {
+	ratioRegistryMu.Lock()
+	defer ratioRegistryMu.Unlock()
+	delete(ratioRegistry, index)
+}
+
+//export PrintRatios
+func PrintRatios(index int) {
+	ratios := lookupRatios(index)
+	fmt.Printf("%v", ratios)
+}
+
+func registerRatios(ratios htree.Ratios) int {
+	ratioRegistryMu.Lock()
+	defer ratioRegistryMu.Unlock()
+	ratioRegistryIndex++
+	ratioRegistry[ratioRegistryIndex] = ratios
+	return ratioRegistryIndex
+}
+
+func lookupRatios(index int) htree.Ratios {
+	ratioRegistryMu.Lock()
+	defer ratioRegistryMu.Unlock()
+	return ratioRegistry[index]
+}
+
 func main() {}
