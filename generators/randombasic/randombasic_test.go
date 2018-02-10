@@ -3,6 +3,7 @@ package randombasic
 import (
 	"fmt"
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/golden"
 	"testing"
 )
 
@@ -36,7 +37,7 @@ func TestGenerator2D(t *testing.T) {
 }
 
 func TestGenerator3D(t *testing.T) {
-	ratios := htree.NewGoldenRatios()
+	ratios := golden.Ratios()
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 50
 	gen := NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 1)

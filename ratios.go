@@ -6,9 +6,6 @@ import "strconv"
 import "bytes"
 import "github.com/scisci/hambidgetree/expr"
 
-// Use something like this calc package to store expressions as ratios
-// https://github.com/marcmak/calc/
-
 type Complements [][]Split
 
 type Ratios interface {
@@ -37,17 +34,17 @@ type TreeRatios interface {
 	Ratios() Ratios           // Returns ratios sorted ascending
 }
 
-type rawRatios []float64
+type floatRatios []float64
 
-func (ratios rawRatios) Len() int {
+func (ratios floatRatios) Len() int {
 	return len(ratios)
 }
 
-func (ratios rawRatios) At(index int) float64 {
+func (ratios floatRatios) At(index int) float64 {
 	return ratios[index]
 }
 
-func (ratios rawRatios) Expr(index int) string {
+func (ratios floatRatios) Expr(index int) string {
 	return strconv.FormatFloat(ratios[index], 'f', -1, 64)
 }
 
@@ -175,7 +172,7 @@ func NewRatios(values []float64) Ratios {
 	ratios := make([]float64, len(values))
 	copy(ratios, values)
 	sort.Float64s(ratios)
-	return rawRatios(ratios)
+	return floatRatios(ratios)
 }
 
 func NewExprRatios(values []string) Ratios {

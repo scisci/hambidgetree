@@ -1,10 +1,14 @@
-package hambidgetree
+package golden_test
 
-import "testing"
+import (
+	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/golden"
+	"testing"
+)
 
 func TestGolden(t *testing.T) {
-	r1 := NewGoldenRatios()
-	r2 := NewGoldenRatiosRaw()
+	r1 := htree.NewRatios(golden.Floats)
+	r2 := htree.NewExprRatios(golden.Exprs)
 
 	if r1.Len() != r2.Len() {
 		t.Errorf("Golden ratios lengths don't match %d & %d", r1.Len(), r2.Len())

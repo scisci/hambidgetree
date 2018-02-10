@@ -5,6 +5,7 @@ import (
 	"github.com/scisci/hambidgetree/algo"
 	"github.com/scisci/hambidgetree/generators/grid"
 	"github.com/scisci/hambidgetree/generators/randombasic"
+	"github.com/scisci/hambidgetree/golden"
 	"testing"
 )
 
@@ -41,7 +42,7 @@ func TestNeighbors3D(t *testing.T) {
 }
 
 func TestNeighbors3DMeasured(t *testing.T) {
-	ratios := htree.NewGoldenRatios()
+	ratios := golden.Ratios()
 	treeRatios := htree.NewTreeRatios(ratios, 0.0000001)
 	numLeaves := 10
 	gen := randombasic.NewRandomBasic3DTreeGenerator(treeRatios, 1, 1, numLeaves, 543543)
