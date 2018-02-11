@@ -17,23 +17,31 @@ func TestGenerator2D(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
 	if len(leaves) != numLeaves {
 		t.Errorf("Got %d leaves, expected %d", len(leaves), numLeaves)
 	}
 
 	fmt.Println("Test2D")
-	it := htree.NewNodeIterator(tree.Root())
+	it := htree.NewImmutableNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
-		fmt.Printf("Node{%d, %v}\n", node.ID(), node.Split())
+		fmt.Printf("Node{%d, %v}\n", node.ID(), node.Branch())
 	}
 
-	dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
-	for dit.HasNext() {
-		dn := dit.Next()
-		fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
+	rit := htree.NewRegionIterator(tree, htree.Origin, htree.UnityScale)
+	for rit.HasNext() {
+		rn := rit.Next()
+		fmt.Printf("Node %d: %v\n", rn.Node().ID(), rn.Dimension())
 	}
+
+	/*
+		dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
+		for dit.HasNext() {
+			dn := dit.Next()
+			fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
+		}
+	*/
 }
 
 func TestGenerator3D(t *testing.T) {
@@ -46,7 +54,7 @@ func TestGenerator3D(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
 	if len(leaves) != numLeaves {
 		t.Errorf("Got %d leaves, expected %d", len(leaves), numLeaves)
 	}
@@ -58,18 +66,19 @@ func TestGenerator3D(t *testing.T) {
 			fmt.Printf("Node{%d, %v}\n", node.ID(), node.Split())
 		}
 	*/
-	dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
-	for dit.HasNext() {
-		dn := dit.Next()
-		//fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
 
-		if !dn.IsLeaf() {
+	rit := htree.NewRegionIterator(tree, htree.Origin, htree.UnityScale)
+	for rit.HasNext() {
+		rn := rit.Next()
+
+		if rn.Node().Branch() != nil { // Ignore non-leaves
 			continue
 		}
 
-		xy := dn.Width() / dn.Height()
-		zx := dn.Depth() / dn.Width()
-		zy := dn.Depth() / dn.Height()
+		dimension := rn.Dimension()
+		xy := dimension.Width() / dimension.Height()
+		zx := dimension.Depth() / dimension.Width()
+		zy := dimension.Depth() / dimension.Height()
 
 		if xy > 8 || xy < 1.0/8.0 {
 			fmt.Printf("Invalid xy ratio %f\n", xy)
@@ -83,4 +92,31 @@ func TestGenerator3D(t *testing.T) {
 			fmt.Printf("Invalid zy ratio %f\n", zy)
 		}
 	}
+	/*
+		dit := htree.NewDimensionalIterator(tree, htree.Origin, 1.0)
+		for dit.HasNext() {
+			dn := dit.Next()
+			//fmt.Printf("Node %d: %v\n", dn.ID(), dn.Dimension)
+
+			if !dn.IsLeaf() {
+				continue
+			}
+
+			xy := dn.Width() / dn.Height()
+			zx := dn.Depth() / dn.Width()
+			zy := dn.Depth() / dn.Height()
+
+			if xy > 8 || xy < 1.0/8.0 {
+				fmt.Printf("Invalid xy ratio %f\n", xy)
+			}
+
+			if zx > 8 || zx < 1.0/8.0 {
+				fmt.Printf("Invalid zx ratio %f\n", zx)
+			}
+
+			if zy > 8 || zy < 1.0/8.0 {
+				fmt.Printf("Invalid zy ratio %f\n", zy)
+			}
+		}
+	*/
 }

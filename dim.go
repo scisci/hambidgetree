@@ -18,6 +18,10 @@ func NewVector(x, y, z float64) *Vector {
 	return &Vector{x, y, z}
 }
 
+func (v *Vector) Add(other *Vector) *Vector {
+	return NewVector(v.x+other.x, v.y+other.y, v.z+other.z)
+}
+
 type Dimension struct {
 	x Extent
 	y Extent
@@ -37,6 +41,10 @@ func NewDimension3D(left, top, front, right, bottom, back float64) *Dimension {
 		y: NewExtent(top, bottom),
 		z: NewExtent(front, back),
 	}
+}
+
+func NewDimension3DV(min, max *Vector) *Dimension {
+	return NewDimension3D(min.x, min.y, min.z, max.x, max.y, max.z)
 }
 
 func (dim *Dimension) Clone() *Dimension {

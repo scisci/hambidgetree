@@ -4,17 +4,14 @@ import (
 	htree "github.com/scisci/hambidgetree"
 )
 
-func BuildAdjacencyMatrix(tree *htree.Tree, dimensionLookup htree.NodeDimensions) (map[htree.NodeID][]*htree.Node, error) {
-	leaves := tree.Leaves()
-
-	matrix := make(map[htree.NodeID][]*htree.Node)
+func BuildAdjacencyMatrix(tree htree.ImmutableTree, regionLookup htree.TreeRegions) map[htree.NodeID][]htree.ImmutableNode {
+	leaves := htree.FindLeaves(tree)
+	matrix := make(map[htree.NodeID][]htree.ImmutableNode)
 
 	for _, leaf := range leaves {
-		neighbors, err := FindNeighbors(leaf, dimensionLookup)
-		if err != nil {
-			return nil, err
-		}
+		neighbors := FindNeighbors(tree, leaf, regionLookup)
 		matrix[leaf.ID()] = neighbors
 	}
-	return matrix, nil
+
+	return matrix
 }

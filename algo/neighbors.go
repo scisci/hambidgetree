@@ -6,39 +6,39 @@ import (
 
 // Go up the tree and select all 'other' leaves, then recursively visit any
 // branches that intersect our leaf until we find leaves that intersect
-func FindNeighbors(leaf *htree.Node, dimensionLookup htree.NodeDimensions) ([]*htree.Node, error) {
+func FindNeighbors(tree htree.ImmutableTree, node htree.ImmutableNode, regionLookup htree.TreeRegions) []htree.ImmutableNode {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
-	dim, err := dimensionLookup.Dimension(leaf.ID())
-	if err != nil {
-		return nil, err
-	}
+	dim := regionLookup.Region(node.ID()).Dimension()
 
-	var neighbors []*htree.Node
+	var neighbors []htree.ImmutableNode
 
 	epsilon := 0.0000001
 
-	ref := leaf
-	parent := ref.Parent()
-	var stack []*htree.Node
+	ref := node
+	parent := tree.Parent(ref.ID())
+	var stack []htree.ImmutableNode
 	for parent != nil {
-		other := parent.Left()
+		parentBranch := parent.Branch()
+
+		if parentBranch == nil {
+			panic("How can parent branch be nil!")
+		}
+
+		other := parentBranch.Left()
 		if other == ref {
-			other = parent.Right()
+			other = parentBranch.Right()
 		}
 		stack = append(stack, other)
 		ref = parent
-		parent = ref.Parent()
+		parent = tree.Parent(ref.ID())
 	}
 
 	for len(stack) > 0 {
-		branch := stack[len(stack)-1]
+		other := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 
-		otherDim, err := dimensionLookup.Dimension(branch.ID())
-		if err != nil {
-			return nil, err
-		}
+		otherDim := regionLookup.Region(other.ID()).Dimension()
 
 		dist := dim.DistanceSquared(otherDim)
 		if dist > epsilon {
@@ -46,12 +46,13 @@ func FindNeighbors(leaf *htree.Node, dimensionLookup htree.NodeDimensions) ([]*h
 			continue
 		}
 
-		if branch.IsLeaf() {
-			neighbors = append(neighbors, branch)
+		otherBranch := other.Branch()
+		if otherBranch == nil {
+			neighbors = append(neighbors, other)
 		} else {
-			stack = append(stack, branch.Left(), branch.Right())
+			stack = append(stack, otherBranch.Left(), otherBranch.Right())
 		}
 	}
 
-	return neighbors, nil
+	return neighbors
 }

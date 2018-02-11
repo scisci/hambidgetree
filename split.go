@@ -15,6 +15,7 @@ type Split interface {
 	IsVertical() bool
 	IsDepth() bool
 	String() string
+	Type() SplitType
 	Inverse() Split
 }
 

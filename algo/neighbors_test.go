@@ -11,15 +11,12 @@ import (
 
 func TestNeighbors2D(t *testing.T) {
 	tree := grid.New2D(2)
-	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
+	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+
 	leaf := leaves[0]
 
-	neighbors, err := algo.FindNeighbors(leaf, dimMap)
-	if err != nil {
-		t.Errorf("Error finding neighbors %v", err)
-	}
-
+	neighbors := algo.FindNeighbors(tree, leaf, regionMap)
 	if len(neighbors) != 3 {
 		t.Errorf("Tree of 4 leaves should always have 3 neighbors, got %d", len(neighbors))
 	}
@@ -27,14 +24,12 @@ func TestNeighbors2D(t *testing.T) {
 
 func TestNeighbors3D(t *testing.T) {
 	tree := grid.New3D(3)
-	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
+	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+
 	leaf := leaves[0]
 
-	neighbors, err := algo.FindNeighbors(leaf, dimMap)
-	if err != nil {
-		t.Errorf("Error finding neighbors %v", err)
-	}
+	neighbors := algo.FindNeighbors(tree, leaf, regionMap)
 
 	if len(neighbors) != 7 {
 		t.Errorf("3d Tree of %d leaves should always have 7 neighbors, got %d", len(leaves), len(neighbors))
@@ -51,19 +46,16 @@ func TestNeighbors3DMeasured(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
+	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+
+	//dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
+	//leaves := tree.Leaves()
 
 	for _, leaf := range leaves {
-		neighbors, err := algo.FindNeighbors(leaf, dimMap)
-		if err != nil {
-			t.Errorf("Error finding neighbors %v", err)
-		}
+		neighbors := algo.FindNeighbors(tree, leaf, regionMap)
 
-		dim, err := dimMap.Dimension(leaf.ID())
-		if err != nil {
-			t.Errorf("Error finding dimension of leaf %v", err)
-		}
+		dim := regionMap.Region(leaf.ID()).Dimension()
 
 		// Make sure that each leaf that is not in neighbors is actually not a
 		// neighbor.
@@ -80,11 +72,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 				}
 			}
 
-			otherDim, err := dimMap.Dimension(other.ID())
-			if err != nil {
-				t.Errorf("Error getting dimension of neighbor %v", err)
-			}
-
+			otherDim := regionMap.Region(other.ID()).Dimension()
 			isCalcNeighbor := dim.DistanceSquared(otherDim) < 0.0000001
 			if isCalcNeighbor != isNeighbor {
 				t.Errorf("Neighbor incorrect, expected %t, got %t", isNeighbor, isCalcNeighbor)
@@ -95,13 +83,10 @@ func TestNeighbors3DMeasured(t *testing.T) {
 
 func TestAdjacencyMatrix(t *testing.T) {
 	tree := grid.New2D(2)
-	dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-	matrix, err := algo.BuildAdjacencyMatrix(tree, dimensionLookup)
-	if err != nil {
-		t.Errorf("Error building adjacency matrix %v", err)
-	}
+	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	matrix := algo.BuildAdjacencyMatrix(tree, regionMap)
+	leaves := htree.FindLeaves(tree)
 
-	leaves := tree.Leaves()
 	if len(matrix) != len(leaves) {
 		t.Errorf("Should have %d items in matrix, got %d", len(leaves), len(matrix))
 	}

@@ -7,6 +7,36 @@ package hambidgetree
 // zyRatioIndex:
 // root: id
 // node: [id: id, split: hvd, index, left: id, right: id]
+
+/*
+type ImmutableTree interface {
+	Ratios() Ratios
+	RatioIndexXY() int
+	RatioIndexZY() int
+	Root() ImmutableNode
+}
+
+type ImmutableNode interface {
+	ID() NodeID
+	SplitType() SplitType
+	RatioIndex() int
+	Left() ImmutableNode
+	Right() ImmutableNode
+}
+
+type ImmutableBranch interface {
+	Type() SplitType
+	RatioIndexLeft() int
+	RatioIndexRight() int
+}
+*/
+
+type TreeRegions interface {
+	Offset() *Vector
+	Scale() float64
+	Region(id NodeID) Region
+}
+
 type Tree struct {
 	uniqueId     NodeID
 	ratios       TreeRatios
@@ -57,6 +87,10 @@ func (tree *Tree) RatioIndex(node *Node, plane RatioPlane) int {
 	}
 
 	return node.RatioIndex()
+}
+
+func (tree *Tree) Parent(node *Node) *Node {
+	return node.parent
 }
 
 func (tree *Tree) Ratios() Ratios {

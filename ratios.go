@@ -6,12 +6,18 @@ import "strconv"
 import "bytes"
 import "github.com/scisci/hambidgetree/expr"
 
+const RatioIndexUndefined = -1
+
 type Complements [][]Split
 
 type Ratios interface {
 	Len() int
 	At(index int) float64
 	Expr(index int) string
+
+	// TODO:
+	// Float64s() []float64
+	// Exprs() []string
 }
 
 func RatiosParameterString(ratios Ratios) string {

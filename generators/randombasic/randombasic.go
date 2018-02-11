@@ -3,6 +3,7 @@ package randombasic
 import (
 	"errors"
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/builder"
 	"math/rand"
 	"strconv"
 )
@@ -16,7 +17,7 @@ type RandomBasicTreeGenerator struct {
 }
 
 type leafSplits struct {
-	leaf   *htree.DimensionalNode
+	leaf   htree.ImmutableLeaf
 	splits []htree.Split
 }
 
@@ -43,8 +44,8 @@ func (gen *RandomBasicTreeGenerator) Is3D() bool {
 	return gen.ZYRatio > 0
 }
 
-func (gen *RandomBasicTreeGenerator) filterLeaves2D(tree *htree.Tree, leaf *htree.DimensionalNode, complements htree.Complements) *leafSplits {
-	ratioIndex := tree.RatioIndex(leaf.Node, htree.RatioPlaneXY)
+func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf htree.ImmutableLeaf, complements htree.Complements) *leafSplits {
+	ratioIndex := leaf.RatioIndexXY() //   tree.RatioIndex(leaf.Node, htree.RatioPlaneXY)
 
 	if len(complements[ratioIndex]) == 0 {
 		return nil
@@ -56,12 +57,12 @@ func (gen *RandomBasicTreeGenerator) filterLeaves2D(tree *htree.Tree, leaf *htre
 	}
 }
 
-func (gen *RandomBasicTreeGenerator) filterLeaves3D(tree *htree.Tree, leaf *htree.DimensionalNode, complements htree.Complements) *leafSplits {
-	ratios := tree.Ratios()
+func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, complements htree.Complements) *leafSplits {
+	ratios := gen.Ratios.Ratios()
 	// We have horizontal and vertical splits defined in the complements array.
 	// We have 3 possible planes that could be divided vertically/horizontally.
-	xyRatioIndex := leaf.RatioIndexXY
-	zyRatioIndex := leaf.RatioIndexZY
+	xyRatioIndex := leaf.RatioIndexXY()
+	zyRatioIndex := leaf.RatioIndexZY()
 
 	xyComplements := complements[xyRatioIndex]
 	zyComplements := complements[zyRatioIndex]
@@ -84,15 +85,15 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(tree *htree.Tree, leaf *htre
 	// the zx plane. If good, then add these to the possibilities as a DepthSplit
 	// (instead of a vertical split)
 
-	xyRatio := tree.Ratio(xyRatioIndex)
-	zyRatio := tree.Ratio(zyRatioIndex)
+	xyRatio := ratios.At(xyRatioIndex)
+	zyRatio := ratios.At(zyRatioIndex)
 	zxRatio := zyRatio / xyRatio
 	var splits []htree.Split
 
 	for _, xySplit := range xyComplements {
 		if xySplit.IsHorizontal() {
-			cutHeight := htree.RatioNormalHeight(xyRatio, tree.Ratio(xySplit.LeftIndex()))
-			compHeight := htree.RatioNormalHeight(xyRatio, tree.Ratio(xySplit.RightIndex()))
+			cutHeight := htree.RatioNormalHeight(xyRatio, ratios.At(xySplit.LeftIndex()))
+			compHeight := htree.RatioNormalHeight(xyRatio, ratios.At(xySplit.RightIndex()))
 			zyRatioTop := zyRatio / cutHeight
 			zyRatioBottom := zyRatio / compHeight
 			index := htree.FindClosestIndexWithinRange(ratios, zyRatioTop, 0.0000001)
@@ -107,8 +108,8 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(tree *htree.Tree, leaf *htre
 				//panic("right invalid")
 			}
 		} else if xySplit.IsVertical() {
-			cutWidth := htree.RatioNormalWidth(xyRatio, tree.Ratio(xySplit.LeftIndex()))
-			compWidth := htree.RatioNormalWidth(xyRatio, tree.Ratio(xySplit.RightIndex()))
+			cutWidth := htree.RatioNormalWidth(xyRatio, ratios.At(xySplit.LeftIndex()))
+			compWidth := htree.RatioNormalWidth(xyRatio, ratios.At(xySplit.RightIndex()))
 			zxRatioTop := zxRatio / cutWidth
 			zxRatioBottom := zxRatio / compWidth
 			index := htree.FindClosestIndexWithinRange(ratios, zxRatioTop, 0.0000001)
@@ -134,8 +135,8 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(tree *htree.Tree, leaf *htre
 			continue
 		}
 
-		cutWidth := htree.RatioNormalWidth(zyRatio, tree.Ratio(zySplit.LeftIndex()))
-		compWidth := htree.RatioNormalWidth(zyRatio, tree.Ratio(zySplit.RightIndex()))
+		cutWidth := htree.RatioNormalWidth(zyRatio, ratios.At(zySplit.LeftIndex()))
+		compWidth := htree.RatioNormalWidth(zyRatio, ratios.At(zySplit.RightIndex()))
 		zxRatioLeft := cutWidth * zxRatio
 		index := htree.FindClosestIndexWithinRange(ratios, zxRatioLeft, 0.0000001)
 		if index < 0 {
@@ -162,7 +163,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(tree *htree.Tree, leaf *htre
 	}
 }
 
-func (gen *RandomBasicTreeGenerator) Generate() (*htree.Tree, error) {
+func (gen *RandomBasicTreeGenerator) Generate() (htree.ImmutableTree, error) {
 	rand.Seed(gen.Seed)
 
 	epsilon := htree.CalculateRatiosEpsilon(gen.Ratios.Ratios())
@@ -174,49 +175,51 @@ func (gen *RandomBasicTreeGenerator) Generate() (*htree.Tree, error) {
 	complements := gen.Ratios.Complements()
 
 	// Generate the container
-	var tree *htree.Tree
+	var treeBuilder *builder.TreeBuilder
 	if !gen.Is3D() {
-		tree = htree.NewTree2D(gen.Ratios, xyRatioIndex)
+		treeBuilder = builder.New2D(gen.Ratios.Ratios(), xyRatioIndex)
 	} else {
 		zyRatioIndex := htree.FindClosestIndex(gen.Ratios.Ratios(), gen.ZYRatio, epsilon)
 		if zyRatioIndex < 0 {
 			return nil, errors.New("Container ratio not found in list of ratios.")
 		}
-		tree = htree.NewTree(gen.Ratios, xyRatioIndex, zyRatioIndex)
+		treeBuilder = builder.New3D(gen.Ratios.Ratios(), xyRatioIndex, zyRatioIndex)
 	}
 
-	leafCount := 1
+	//leafCount := 1
 
-	leafDims := []*htree.DimensionalNode{
-		htree.NewDimensionalNodeFromTree(tree, htree.Origin, htree.UnityScale),
-	}
+	//leafDims := treeBuilder.Leaves()
 
 	for {
-		if leafCount >= gen.NumLeaves {
+		leaves := treeBuilder.Leaves()
+
+		if len(leaves) >= gen.NumLeaves {
 			break
 		}
 
-		it := htree.NewDimensionalIterator(tree, htree.Origin, htree.UnityScale) // NewDimensionalIteratorFromLeaves(leafDims)
+		//it := htree.NewDimensionalIterator(tree, htree.Origin, htree.UnityScale) // NewDimensionalIteratorFromLeaves(leafDims)
 
-		leafDims = leafDims[:0]
-		for it.HasNext() {
-			dimNode := it.Next()
-			if dimNode.IsLeaf() {
-				leafDims = append(leafDims, dimNode)
+		/*
+			leafDims = leafDims[:0]
+			for it.HasNext() {
+				dimNode := it.Next()
+				if dimNode.IsLeaf() {
+					leafDims = append(leafDims, dimNode)
+				}
 			}
-		}
+		*/
 
 		// Collect all splittable leaves
 		var filteredLeaves []*leafSplits
 
-		for _, leaf := range leafDims {
+		for _, leaf := range leaves {
 
 			if !gen.Is3D() {
-				if filteredLeaf := gen.filterLeaves2D(tree, leaf, complements); filteredLeaf != nil {
+				if filteredLeaf := gen.filterLeaves2D(leaf, complements); filteredLeaf != nil {
 					filteredLeaves = append(filteredLeaves, filteredLeaf)
 				}
 			} else {
-				if filteredLeaf := gen.filterLeaves3D(tree, leaf, complements); filteredLeaf != nil {
+				if filteredLeaf := gen.filterLeaves3D(leaf, complements); filteredLeaf != nil {
 					filteredLeaves = append(filteredLeaves, filteredLeaf)
 				}
 			}
@@ -229,7 +232,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (*htree.Tree, error) {
 
 		if len(filteredLeaves) == 0 {
 			return nil, errors.New("Unable to reach desired number of leaves (" +
-				strconv.Itoa(gen.NumLeaves) + "), got " + strconv.Itoa(leafCount) + ".")
+				strconv.Itoa(gen.NumLeaves) + "), got " + strconv.Itoa(len(leaves)) + ".")
 		}
 
 		// Choose a leaf at random
@@ -247,9 +250,11 @@ func (gen *RandomBasicTreeGenerator) Generate() (*htree.Tree, error) {
 			split = split.Inverse()
 		}
 
-		filteredLeaf.leaf.Divide(split)
-		leafCount += 1
+		treeBuilder.Branch(filteredLeaf.leaf.ID(), split.Type(), split.LeftIndex(), split.RightIndex())
+		//filteredLeaf.leaf.Divide(split)
+		//leafCount += 1
 	}
 
+	tree, _ := treeBuilder.Build()
 	return tree, nil
 }
