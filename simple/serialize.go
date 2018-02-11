@@ -7,6 +7,8 @@ import (
 	"sort"
 )
 
+const JSONVersion = 1
+
 var InvalidSplitType = errors.New("Invalid split type")
 
 // Serialize this like so
@@ -44,6 +46,12 @@ type jsonBranch struct {
 type jsonNode struct {
 	ID     htree.NodeID `json:"id"`
 	Branch *jsonBranch  `json:"branch,omitempty"`
+}
+
+func UnmarshalJSON(version int, data []byte) (*Tree, error) {
+	tree := &Tree{}
+	err := json.Unmarshal(data, &tree)
+	return tree, err
 }
 
 func (tree *Tree) MarshalJSON() ([]byte, error) {
