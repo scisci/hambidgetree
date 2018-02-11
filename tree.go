@@ -37,6 +37,7 @@ type TreeRegions interface {
 	Region(id NodeID) Region
 }
 
+/*
 type Tree struct {
 	uniqueId     NodeID
 	ratios       TreeRatios
@@ -139,3 +140,4 @@ func (tree *Tree) RatioZY() float64 {
 
 	return tree.ratios.Ratios().At(tree.zyRatioIndex)
 }
+*/

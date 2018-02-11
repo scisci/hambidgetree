@@ -2,10 +2,12 @@ package hambidgetree
 
 type NodeID int64
 
+/*
 type RatioPlane int
 
 const RatioPlaneXY = 1
 const RatioPlaneZY = 2
+*/
 
 type ImmutableTree interface {
 	Ratios() Ratios
@@ -35,6 +37,7 @@ type ImmutableLeaf interface {
 	RatioIndexZY() int
 }
 
+/*
 type Node struct {
 	tree   *Tree
 	id     NodeID
@@ -73,11 +76,7 @@ func (node *Node) Divide(split Split) {
 	node.right = NewNode(node.tree, node)
 }
 
-/*
-func (node *Node) Parent() *Node {
-	return node.parent
-}
-*/
+
 func (node *Node) Left() *Node {
 	return node.left
 }
@@ -110,4 +109,4 @@ func (node *Node) RatioIndex() int {
 
 func (node *Node) Ratio() float64 {
 	return node.tree.ratios.Ratios().At(node.RatioIndex())
-}
+}*/

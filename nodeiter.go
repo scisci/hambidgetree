@@ -1,5 +1,6 @@
 package hambidgetree
 
+/*
 type NodeIterator struct {
 	nodes []*Node
 }
@@ -28,7 +29,7 @@ func (it *NodeIterator) Next() *Node {
 
 	return node
 }
-
+*/
 type ImmutableNodeIterator struct {
 	nodes []ImmutableNode
 }

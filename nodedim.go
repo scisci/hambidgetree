@@ -11,6 +11,7 @@ var Origin = &Vector{0.0, 0.0, 0.0}
 
 const UnityScale = 1.0
 
+/*
 type NodeDimensions interface {
 	Dimension(id NodeID) (*Dimension, error)
 }
@@ -61,7 +62,7 @@ func NewDimensionalIteratorFromLeaves(leaves []*DimensionalNode) *DimensionalIte
 func (it *DimensionalIterator) HasNext() bool {
 	return len(it.dimensions) > 0
 }
-
+*/
 type Region interface {
 	Dimension() *Dimension
 	RatioIndexXY() int
@@ -186,6 +187,7 @@ func SplitRegionDepth(ratios Ratios, region Region, leftIndex, rightIndex int) (
 	return
 }
 
+/*
 func NewDimensionalNodeFromRegion(node *Node, region Region) *DimensionalNode {
 	return &DimensionalNode{
 		Node:         node,
@@ -222,7 +224,9 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(right, rightRegion))
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(left, leftRegion))
-			/*
+
+
+			//// START REMOVE
 				leftHeightParam := RatioNormalHeight(node.tree.Ratio(node.RatioIndexXY), left.Ratio())
 
 				leftRatioIndexZY := node.RatioIndexZY
@@ -256,7 +260,7 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 					RatioIndexXY:          left.RatioIndex(),
 					RatioIndexZY:          leftRatioIndexZY,
 				})
-			*/
+			////// END REMOVE
 		} else if split.IsVertical() {
 			// When we split vertically
 			leftRegion, rightRegion := SplitRegionVertical(node.tree.ratios.Ratios(),
@@ -270,7 +274,7 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(right, rightRegion))
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(left, leftRegion))
-			/*
+			///// START REMOVE
 				leftWidthParam := RatioNormalWidth(node.tree.Ratio(node.RatioIndexXY), left.Ratio()) // left.Ratio() / ratio
 
 				it.dimensions = append(it.dimensions, &DimensionalNode{
@@ -287,7 +291,9 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 					ParentDimensionalNode: node,
 					RatioIndexXY:          left.RatioIndex(),
 					RatioIndexZY:          node.RatioIndexZY,
-				})*/
+				})
+
+				//// END REMOVE
 		} else if split.IsDepth() {
 			leftRegion, rightRegion := SplitRegionDepth(node.tree.ratios.Ratios(),
 				&SimpleRatioRegion{
@@ -301,7 +307,8 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(right, rightRegion))
 			it.dimensions = append(it.dimensions, NewDimensionalNodeFromRegion(left, leftRegion))
 			//fmt.Println("splitting depth")
-			/*
+
+			// START REMOVE
 				leftDepthParam := RatioNormalWidth(node.tree.Ratio(node.RatioIndexZY), left.Ratio())
 				//fmt.Printf("depth: %f, container: %f, ratio: %f\n", dimension.Depth(), node.RatioZY, leftRatio)
 
@@ -320,13 +327,14 @@ func (it *DimensionalIterator) Next() *DimensionalNode {
 					RatioIndexXY:          node.RatioIndexXY,
 					RatioIndexZY:          left.RatioIndex(),
 				})
-			*/
+			/// END REMOVE
 		}
 
 	}
 
 	return node
 }
+*/
 
 type RegionIterator struct {
 	tree    ImmutableTree
@@ -453,6 +461,7 @@ func (m *NodeRegionMap) Region(id NodeID) Region {
 	return m.lookup[id]
 }
 
+/*
 type NodeDimensionMap struct {
 	lookup map[NodeID]*DimensionalNode
 }
@@ -476,3 +485,4 @@ func (nodeDimMap NodeDimensionMap) Dimension(id NodeID) (*Dimension, error) {
 		return dim.Dimension, nil
 	}
 }
+*/
