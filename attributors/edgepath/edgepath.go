@@ -125,7 +125,7 @@ type EdgePathAttributor struct {
 
 const edgePathMaxChaos = 100
 
-func NewEdgePathAttributor(paths []EdgePath, seed int64, chaos float64) *EdgePathAttributor {
+func New(paths []EdgePath, seed int64, chaos float64) *EdgePathAttributor {
 	return &EdgePathAttributor{
 		Paths:    paths,
 		Seed:     seed,
