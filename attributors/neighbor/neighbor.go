@@ -23,27 +23,22 @@ func NewHasNeighborAttributor(maxMarks int, dimension int, seed int64) *HasNeigh
 	}
 }
 
-func (attributor *HasNeighborAttributor) AddAttributes(tree *htree.Tree, attrs *attributors.NodeAttributer) error {
+func (attributor *HasNeighborAttributor) AddAttributes(tree htree.ImmutableTree, attrs *attributors.NodeAttributer) error {
 	rand.Seed(attributor.Seed)
 	epsilon := 0.0000001
 
 	// Get a list of all the nodes
-	leaves := tree.Leaves()
+	leaves := htree.FindLeaves(tree)
 
 	// Get the dimension list
-	nodeDimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-
-	var err error
+	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	//nodeDimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 
 	// Naive approach, just compare each leaf to each other leaf, could do better
 	// with some sorting
 	for count := 0; count < attributor.MaxMarks; count++ {
 		// Find all the remaining leaves that still have neighbors
-		leaves, err = getNeighbors(leaves, nodeDimMap, epsilon)
-		if err != nil {
-			return err
-		}
-
+		leaves = getNeighbors(leaves, regionMap, epsilon)
 		if len(leaves) < 2 {
 			break
 		}
