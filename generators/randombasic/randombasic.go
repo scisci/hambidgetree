@@ -9,11 +9,11 @@ import (
 )
 
 type RandomBasicTreeGenerator struct {
+	NumLeaves int
 	Ratios    htree.TreeRatios
+	Seed      int64
 	XYRatio   float64
 	ZYRatio   float64
-	NumLeaves int
-	Seed      int64
 }
 
 type leafSplits struct {
@@ -21,22 +21,22 @@ type leafSplits struct {
 	splits []htree.Split
 }
 
-func New(ratios htree.TreeRatios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New(ratios htree.Ratios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
 	return &RandomBasicTreeGenerator{
-		Ratios:    ratios,
-		XYRatio:   containerRatio,
 		NumLeaves: numLeaves,
+		Ratios:    htree.NewTreeRatios(ratios, 0.0000001),
 		Seed:      seed,
+		XYRatio:   containerRatio,
 	}
 }
 
-func New3D(ratios htree.TreeRatios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New3D(ratios htree.Ratios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
 	return &RandomBasicTreeGenerator{
-		Ratios:    ratios,
+		NumLeaves: numLeaves,
+		Ratios:    htree.NewTreeRatios(ratios, 0.0000001),
+		Seed:      seed,
 		XYRatio:   xyRatio,
 		ZYRatio:   zyRatio,
-		NumLeaves: numLeaves,
-		Seed:      seed,
 	}
 }
 

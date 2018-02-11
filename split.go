@@ -8,6 +8,35 @@ const SplitTypeHorizontal SplitType = 1 // Split along Y axis
 const SplitTypeVertical SplitType = 2   // Split along X axis
 const SplitTypeDepth SplitType = 3      // Split along Z axis
 
+func (splitType SplitType) ShortString() string {
+	switch splitType {
+	case SplitTypeHorizontal:
+		return "h"
+	case SplitTypeVertical:
+		return "v"
+	case SplitTypeDepth:
+		return "d"
+	default:
+		return "-"
+	}
+}
+
+func SplitTypeForShortString(shortString string) (SplitType, bool) {
+	if shortString == "h" {
+		return SplitTypeHorizontal, true
+	}
+
+	if shortString == "v" {
+		return SplitTypeVertical, true
+	}
+
+	if shortString == "d" {
+		return SplitTypeDepth, true
+	}
+
+	return SplitTypeHorizontal, false
+}
+
 type Split interface {
 	LeftIndex() int
 	RightIndex() int

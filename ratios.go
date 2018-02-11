@@ -212,6 +212,14 @@ func NewRatiosSubset(ratios Ratios, values []float64, epsilon float64) Ratios {
 	return subset
 }
 
+func RatiosToExprs(ratios Ratios) []string {
+	exprs := make([]string, ratios.Len())
+	for i := 0; i < ratios.Len(); i++ {
+		exprs[i] = ratios.Expr(i)
+	}
+	return exprs
+}
+
 func NewComplements(ratios Ratios, epsilon float64) Complements {
 	n := ratios.Len()
 	complements := make([][]Split, n)

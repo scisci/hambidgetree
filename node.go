@@ -31,6 +31,7 @@ type ImmutableNode interface {
 	Branch() ImmutableBranch
 }
 
+// This isn't part of ImmutableTree, it is returned by some builders
 type ImmutableLeaf interface {
 	ID() NodeID
 	RatioIndexXY() int
