@@ -2,12 +2,17 @@ package main
 
 /*
 #include "stdlib.h" // for C.free
-struct HTreeRect {
+
+struct htree_vec {
 	double x;
 	double y;
-	double w;
-	double h;
-	double *more;
+	double z;
+};
+
+struct htree_region {
+	long long id;
+	struct htree_vec min;
+	struct htree_vec max;
 };
 
 */
@@ -57,8 +62,44 @@ func CreateRandomBasicTree(containerRatio float64, numRects int, seed int64) int
 	return registerTree(tree)
 }
 
-//export SerializeTree
-func SerializeTree(id int) (data_ptr unsafe.Pointer, count C.int) {
+//export CreateLeafRegions
+func CreateLeafRegions(id int) (data_ptr unsafe.Pointer, count C.int) {
+	tree := lookupTree(id)
+	if tree == nil {
+		fmt.Printf("Tree does not exist")
+		return nil, 0
+	}
+
+	var leaves []htree.NodeRegion
+	it := htree.NewRegionIterator(tree, htree.Origin, htree.UnityScale)
+	for it.HasNext() {
+		nodeRegion := it.Next()
+		if nodeRegion.Node().Branch() == nil {
+			// Its a leaf
+			leaves = append(leaves, nodeRegion)
+		}
+	}
+
+	// Allocate space
+	count = C.int(len(leaves))
+	data_ptr = C.malloc(C.size_t(C.sizeof_struct_htree_region * count))
+	for i, region := range leaves {
+		dim := region.Dimension()
+		c_node_region := C.struct_htree_region{}
+		c_node_region.id = C.longlong(region.Node().ID())
+		c_node_region.min = C.struct_htree_vec{C.double(dim.Left()), C.double(dim.Top()), C.double(dim.Front())}
+		c_node_region.max = C.struct_htree_vec{C.double(dim.Right()), C.double(dim.Bottom()), C.double(dim.Back())}
+
+		// Store the value in there
+		ptr := unsafe.Pointer(uintptr(data_ptr) + uintptr(C.sizeof_struct_htree_region*i))
+		*(*C.struct_htree_region)(ptr) = c_node_region
+	}
+
+	return
+}
+
+//export CreateSerializationOfTree
+func CreateSerializationOfTree(id int) (data_ptr unsafe.Pointer, count C.int) {
 	tree := lookupTree(id)
 	data, err := factory.MarshalJSON(tree)
 	if err != nil {
@@ -66,6 +107,11 @@ func SerializeTree(id int) (data_ptr unsafe.Pointer, count C.int) {
 		return nil, 0
 	}
 	return C.CBytes(data), C.int(len(data))
+}
+
+//export Release
+func Release(data_ptr unsafe.Pointer) {
+	C.free(data_ptr)
 }
 
 //export CreateDeserializedTree
