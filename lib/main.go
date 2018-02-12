@@ -16,11 +16,14 @@ import "C"
 import (
 	"fmt"
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/factory"
+	"github.com/scisci/hambidgetree/generators/randombasic"
 	"github.com/scisci/hambidgetree/golden"
 	"sync"
 	"unsafe"
 )
 
+/*
 //export FillRect
 func FillRect() C.struct_HTreeRect {
 	count := 2
@@ -36,41 +39,67 @@ func FillRect() C.struct_HTreeRect {
 func FreeRect(r C.struct_HTreeRect) {
 	C.free(unsafe.Pointer(r.more))
 }
+*/
 
-var ratioRegistryMu sync.Mutex
-var ratioRegistryIndex = 0
-var ratioRegistry = make(map[int]htree.Ratios)
+var treeRegMu sync.Mutex
+var treeRegIndex = 0
+var treeReg = make(map[int]htree.ImmutableTree)
 
-//export CreateGoldenRatios
-func CreateGoldenRatios() int {
-	return registerRatios(golden.Ratios())
+//export CreateRandomBasicTree
+func CreateRandomBasicTree(containerRatio float64, numRects int, seed int64) int {
+	ratios := golden.Ratios()
+	gen := randombasic.New(ratios, containerRatio, numRects, seed)
+	tree, err := gen.Generate()
+	if err != nil {
+		fmt.Printf("Failed to generate tree (%v)\n", err)
+		return -1
+	}
+	return registerTree(tree)
 }
 
-//export ReleaseRatios
-func ReleaseRatios(index int) {
-	ratioRegistryMu.Lock()
-	defer ratioRegistryMu.Unlock()
-	delete(ratioRegistry, index)
+//export SerializeTree
+func SerializeTree(id int) (data_ptr unsafe.Pointer, count C.int) {
+	tree := lookupTree(id)
+	data, err := factory.MarshalJSON(tree)
+	if err != nil {
+		fmt.Printf("Failed to marshal tree (%v)\n", err)
+		return nil, 0
+	}
+	return C.CBytes(data), C.int(len(data))
 }
 
-//export PrintRatios
-func PrintRatios(index int) {
-	ratios := lookupRatios(index)
-	fmt.Printf("%v", ratios)
+//export CreateDeserializedTree
+func CreateDeserializedTree(data_ptr unsafe.Pointer, count C.int) int {
+	data := C.GoBytes(data_ptr, count)
+	tree, err := factory.UnmarshalJSON(data)
+	if err != nil {
+		fmt.Printf("Failed to unmarshal tree (%v)\n", err)
+		return -1
+	}
+	return registerTree(tree)
 }
 
-func registerRatios(ratios htree.Ratios) int {
-	ratioRegistryMu.Lock()
-	defer ratioRegistryMu.Unlock()
-	ratioRegistryIndex++
-	ratioRegistry[ratioRegistryIndex] = ratios
-	return ratioRegistryIndex
+//export ReleaseTree
+func ReleaseTree(id int) {
+	treeRegMu.Lock()
+	defer treeRegMu.Unlock()
+	delete(treeReg, id)
+	fmt.Printf("Released tree handle %d\n", id)
 }
 
-func lookupRatios(index int) htree.Ratios {
-	ratioRegistryMu.Lock()
-	defer ratioRegistryMu.Unlock()
-	return ratioRegistry[index]
+func registerTree(tree htree.ImmutableTree) int {
+	treeRegMu.Lock()
+	defer treeRegMu.Unlock()
+	treeRegIndex++
+	treeReg[treeRegIndex] = tree
+	fmt.Printf("Registered tree handle %d\n", treeRegIndex)
+	return treeRegIndex
+}
+
+func lookupTree(index int) htree.ImmutableTree {
+	treeRegMu.Lock()
+	defer treeRegMu.Unlock()
+	return treeReg[index]
 }
 
 func main() {}
