@@ -1,1 +1,1 @@
-go build -buildmode=c-archive -o htree.a main.go
+~/work/customgo/go/bin/go build -buildmode=c-archive -o libhtree.a main.go
