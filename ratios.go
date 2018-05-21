@@ -3,6 +3,7 @@ package hambidgetree
 import "math"
 import "sort"
 import "strconv"
+import "regexp"
 import "bytes"
 import "github.com/scisci/hambidgetree/expr"
 
@@ -21,6 +22,7 @@ type Ratios interface {
 }
 
 func RatiosParameterString(ratios Ratios) string {
+	r := regexp.MustCompile(`SQRT\(([^\)]+)\)`)
 	n := ratios.Len()
 
 	buf := bytes.NewBuffer(nil)
@@ -29,7 +31,11 @@ func RatiosParameterString(ratios Ratios) string {
 		if i > 0 {
 			buf.WriteString(", ")
 		}
-		buf.WriteString(strconv.FormatFloat(ratios.At(i), 'f', 4, 64))
+		expr := r.ReplaceAllString(ratios.Expr(i), "√$1")
+
+		// Replace SQRT(x) with symbol
+
+		buf.WriteString(expr)
 	}
 	buf.WriteString("]")
 	return buf.String()
