@@ -29,7 +29,7 @@ func (extent Extent) Empty() bool {
 }
 
 func (extent Extent) NearlyEmpty(epsilon float64) bool {
-	return extent.end-extent.start < epsilon
+	return extent.end - extent.start < epsilon
 }
 
 func (extent Extent) Size() float64 {

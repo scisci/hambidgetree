@@ -10,7 +10,8 @@ import (
 
 type RandomBasicTreeGenerator struct {
 	NumLeaves int
-	Ratios    htree.TreeRatios
+	RatioSource    htree.RatioSource
+	Complements htree.Complements
 	Seed      int64
 	XYRatio   float64
 	ZYRatio   float64
@@ -21,23 +22,35 @@ type leafSplits struct {
 	splits []htree.Split
 }
 
-func New(ratios htree.Ratios, containerRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New(ratioSource htree.RatioSource, containerRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
+	complements, err := htree.NewComplements(ratioSource.RatioFloats(), 0.0000001)
+	if (err !=nil)  {
+		return nil, err
+	}
+
 	return &RandomBasicTreeGenerator{
 		NumLeaves: numLeaves,
-		Ratios:    htree.NewTreeRatios(ratios, 0.0000001),
+		RatioSource: ratioSource,
+		Complements:    complements,
 		Seed:      seed,
 		XYRatio:   containerRatio,
-	}
+	}, nil
 }
 
-func New3D(ratios htree.Ratios, xyRatio, zyRatio float64, numLeaves int, seed int64) *RandomBasicTreeGenerator {
+func New3D(ratioSource htree.RatioSource, xyRatio, zyRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
+	complements, err := htree.NewComplements(ratioSource.RatioFloats(), 0.0000001)
+	if (err !=nil)  {
+		return nil, err
+	}
+	
 	return &RandomBasicTreeGenerator{
 		NumLeaves: numLeaves,
-		Ratios:    htree.NewTreeRatios(ratios, 0.0000001),
+		RatioSource: ratioSource,
+		Complements:    complements,
 		Seed:      seed,
 		XYRatio:   xyRatio,
 		ZYRatio:   zyRatio,
-	}
+	},nil
 }
 
 func (gen *RandomBasicTreeGenerator) Is3D() bool {

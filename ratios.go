@@ -1,11 +1,17 @@
 package hambidgetree
 
-import "math"
-import "sort"
-import "strconv"
-import "regexp"
-import "bytes"
-import "github.com/scisci/hambidgetree/expr"
+import (
+	"math"
+	"sort"
+	"errors"
+	"strconv"
+	"github.com/scisci/hambidgetree/expr"
+)
+
+var ErrMissingInverse = errors.New("Missing inverse")
+var ErrRatiosUnordered = errors.New("Ratios unordered")
+var ErrRatiosContainsDuplicates = errors.New("Ratios contain duplicates")
+var ErrRatioNotFound = errors.New("Ratio not found")
 
 const RatioIndexUndefined = -1
 
@@ -15,36 +21,54 @@ type Ratios interface {
 	Len() int
 	At(index int) float64
 	Expr(index int) string
-
-	// TODO:
-	// Float64s() []float64
-	// Exprs() []string
 }
 
-func RatiosParameterString(ratios Ratios) string {
-	r := regexp.MustCompile(`SQRT\(([^\)]+)\)`)
-	n := ratios.Len()
+type RatioSource interface {
+	RatioFloats() RatioFloats
+}
 
-	buf := bytes.NewBuffer(nil)
-	buf.WriteString("[")
-	for i := 0; i < n; i++ {
-		if i > 0 {
-			buf.WriteString(", ")
-		}
-		expr := r.ReplaceAllString(ratios.Expr(i), "√$1")
+func NewBasicRatioSource(values []float64) RatioSource {
+	tmp := make([]float64, len(values))
+	copy(tmp, values)
+	sort.Float64s(tmp)
 
-		// Replace SQRT(x) with symbol
-
-		buf.WriteString(expr)
+	ratios, err := NewRatioFloats(tmp)
+	if err !=nil {
+		panic(err)
 	}
-	buf.WriteString("]")
-	return buf.String()
+
+	return &basicRatioSource {
+		ratios: ratios,
+	}
 }
 
-type TreeRatios interface {
-	Complements() Complements // Returns complements
-	Ratios() Ratios           // Returns ratios sorted ascending
+type basicRatioSource struct {
+	ratios RatioFloats
 }
+
+func (basicRatioSource *basicRatioSource) RatioFloats() RatioFloats {
+	return basicRatioSource.ratios
+}
+
+type RatioFloats []float64
+
+func NewRatioFloats(values []float64) (RatioFloats, error) {
+	n := len(values)
+
+	for i := 1; i < n; i++ {
+		if (values[i-1] > values[i]) {
+			return nil, ErrRatiosUnordered
+		}
+
+		if (values[i-1] == values[i]) {
+			return nil, ErrRatiosContainsDuplicates
+		}
+	}
+
+	return RatioFloats(values), nil
+}
+
+
 
 type floatRatios []float64
 
@@ -93,27 +117,16 @@ func (ratios cachedExprRatios) Expr(index int) string {
 	return ratios[index].expression
 }
 
-type ratioSubset struct {
-	ratios  Ratios
+type ratioSourceSubset struct {
+	ratioSource  RatioSource
+	ratios RatioFloats
 	indexes []int
 }
 
-func (ratios *ratioSubset) Len() int {
-	return len(ratios.indexes)
+func (ratioSourceSubset *ratioSourceSubset) RatioFloats() RatioFloats {
+	return ratioSourceSubset.ratios
 }
 
-func (ratios *ratioSubset) At(index int) float64 {
-	return ratios.ratios.At(ratios.indexes[index])
-}
-
-func (ratios *ratioSubset) Expr(index int) string {
-	return ratios.ratios.Expr(ratios.indexes[index])
-}
-
-type treeRatios struct {
-	ratios      Ratios
-	complements Complements
-}
 
 // Returns the parameterized height of a ratio if it is contained within another
 // ratio. i.e. A ratio of 2:1 within a ratio of 1:2 has a normal height of 0.25
@@ -130,14 +143,14 @@ func RatioNormalWidth(containerRatio, ratio float64) float64 {
 // Given a sorted list of values, the epsilon value is some function of the
 // minimum distance between two of the values. Technically we should only have
 // to divide this by 2, but we do it by 1000 just for fun.
-func CalculateRatiosEpsilon(ratios Ratios) float64 {
+func CalculateRatiosEpsilon(ratios RatioFloats) float64 {
 	minDist := math.MaxFloat64
-	n := ratios.Len()
+	n := len(ratios)
 
 	if n > 1 {
-		lastVal := ratios.At(0)
+		lastVal := ratios[0]
 		for i := 1; i < n; i++ {
-			val := ratios.At(i)
+			val := ratios[i]
 			if val-lastVal < minDist {
 				minDist = val - lastVal
 			}
@@ -148,44 +161,27 @@ func CalculateRatiosEpsilon(ratios Ratios) float64 {
 	return minDist / 1000.0
 }
 
-func NewTreeRatios(ratios Ratios, epsilon float64) TreeRatios {
-	// Make sure each ratio has an inverse
-	var ratiosToAdd []float64
+func FindIndexesWithMissingInverses(ratios RatioFloats, epsilon float64) []int {
+	var indexes []int
 
-	for i := 0; i < ratios.Len(); i++ {
+	for i := 0; i < len(ratios); i++ {
 		if FindInverseRatioIndex(ratios, i, epsilon) == -1 {
-			ratiosToAdd = append(ratiosToAdd, 1/ratios.At(i))
+			indexes = append(indexes, i)
 		}
 	}
 
-	if len(ratiosToAdd) > 0 {
-		for i := 0; i < ratios.Len(); i++ {
-			ratiosToAdd = append(ratiosToAdd, ratios.At(i))
-		}
-
-		ratios = NewRatios(ratiosToAdd)
-	}
-
-	return &treeRatios{
-		ratios:      ratios,
-		complements: NewComplements(ratios, epsilon),
-	}
+	return indexes
 }
 
-func (ratios *treeRatios) Ratios() Ratios {
-	return ratios.ratios
-}
 
-func (ratios *treeRatios) Complements() Complements {
-	return ratios.complements
-}
 
-func NewRatios(values []float64) Ratios {
+func NewRatios(values RatioFloats) Ratios {
 	ratios := make([]float64, len(values))
 	copy(ratios, values)
 	sort.Float64s(ratios)
 	return floatRatios(ratios)
 }
+
 
 func NewExprRatios(values []string) Ratios {
 	exprs := make([]cachedExpr, len(values))
@@ -199,46 +195,62 @@ func NewExprRatios(values []string) Ratios {
 	return res
 }
 
-func NewRatiosSubset(ratios Ratios, values []float64, epsilon float64) Ratios {
-	subset := &ratioSubset{
-		ratios:  ratios,
-		indexes: nil,
+func NewRatioSourceSubset(ratioSource RatioSource, values []float64, epsilon float64) (RatioSource, error) {
+	tmp := make([]float64, len(values))
+	copy(tmp, values)
+	sort.Float64s(tmp)
+
+	allRatios := ratioSource.RatioFloats()
+	subRatios, err := NewRatioFloats(tmp)
+	if err !=nil {
+		panic(err)
 	}
 
-	for _, value := range values {
-		for j := 0; j < ratios.Len(); j++ {
-			if math.Abs(ratios.At(j)-value) < epsilon {
-				subset.indexes = append(subset.indexes, j)
+	var indexes []int
+	for i, value := range subRatios {
+		found := false
+		for j := 0; j < len(allRatios); j++ {
+			if math.Abs(allRatios[j]-value) < epsilon {
+				found = true
+				indexes = append(indexes, j)
 				break
 			}
 		}
+		if !found {
+			return nil, ErrRatioNotFound
+		}
 	}
 
-	sort.Ints(subset.indexes)
-	return subset
+
+
+	return &ratioSourceSubset{
+		ratioSource: ratioSource,
+		ratios:  subRatios,
+		indexes: indexes,
+	},nil
 }
 
-func RatiosToExprs(ratios Ratios) []string {
-	exprs := make([]string, ratios.Len())
-	for i := 0; i < ratios.Len(); i++ {
-		exprs[i] = ratios.Expr(i)
+
+
+func NewComplements(ratios RatioFloats, epsilon float64) (Complements, error) {
+	for i := 0; i < len(ratios); i++ {
+		if FindInverseRatioIndex(ratios, i, epsilon) == -1 {
+			return nil, ErrMissingInverse
+		}
 	}
-	return exprs
-}
 
-func NewComplements(ratios Ratios, epsilon float64) Complements {
-	n := ratios.Len()
+	n := len(ratios)
 	complements := make([][]Split, n)
 
 	for i := 0; i < n; i++ {
-		ratio := ratios.At(i)
+		ratio := ratios[i]
 
 		// Try to split the width, in the ratio array the height is always considered
 		// to be unity
 		for j := 0; j < n; j++ {
-			if ratios.At(j) < ratio-epsilon {
+			if ratios[j] < ratio - epsilon {
 				for k := j; k < n; k++ {
-					if math.Abs(ratio-ratios.At(j)-ratios.At(k)) < epsilon {
+					if math.Abs(ratio - ratios[j] - ratios[k]) < epsilon {
 						left, right := j, k
 						if left > right {
 							left, right = right, left
@@ -257,9 +269,9 @@ func NewComplements(ratios Ratios, epsilon float64) Complements {
 		// split a ratio of 2.0, well with 2 1.0s, etc.
 		ratio = 1.0 / ratio
 		for j := 0; j < n; j++ {
-			if ratios.At(j) < ratio-epsilon {
+			if ratios[j] < ratio-epsilon {
 				for k := j; k < n; k++ {
-					if math.Abs(ratio-ratios.At(j)-ratios.At(k)) < epsilon {
+					if math.Abs(ratio-ratios[j]-ratios[k]) < epsilon {
 						// The ratios here won't actually be j and k, they will be the inverses
 						// Because they are vertically stacked and height is always
 						// considered 1
@@ -283,7 +295,7 @@ func NewComplements(ratios Ratios, epsilon float64) Complements {
 		}
 	}
 
-	return Complements(complements)
+	return Complements(complements), nil
 }
 
 func (c Complements) String() string {
@@ -300,7 +312,7 @@ func (c Complements) String() string {
 
 // Binary search to find closest index, must provided an epsilon for float precision
 // errors, if there are two that are the same distance, the smaller index wins.
-func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
+func FindClosestIndex(ratios RatioFloats, ratio, epsilon float64) int {
 	closestDist := math.MaxFloat64
 	closestIndex := -1
 
@@ -308,12 +320,12 @@ func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
 
 	// Define f(-1) == false and f(n) == true.
 	// Invariant: f(i-1) == false, f(j) == true.
-	i, j := 0, ratios.Len()
+	i, j := 0, len(ratios)
 	for i < j {
 		//loops = loops + 1
 		h := i + (j-i)/2 // avoid overflow when computing h
 
-		dist := ratio - ratios.At(h)
+		dist := ratio - ratios[h]
 
 		// i ≤ h < j
 		if dist > 0 {
@@ -335,13 +347,13 @@ func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
 	return closestIndex
 }
 
-func FindClosestIndexWithinRange(ratios Ratios, ratio, epsilon float64) int {
+func FindClosestIndexWithinRange(ratios RatioFloats, ratio, epsilon float64) int {
 	index := FindClosestIndex(ratios, ratio, epsilon)
 	if index < 0 {
 		return -1
 	}
 
-	dist := ratio - ratios.At(index)
+	dist := ratio - ratios[index]
 	if dist < -epsilon || dist > epsilon {
 		return -1
 	}
@@ -349,15 +361,15 @@ func FindClosestIndexWithinRange(ratios Ratios, ratio, epsilon float64) int {
 	return index
 }
 
-func FindClosestInverseIndex(ratios Ratios, ratio, epsilon float64) int {
+func FindClosestInverseIndex(ratios RatioFloats, ratio, epsilon float64) int {
 	return FindClosestIndex(ratios, 1.0/ratio, epsilon)
 }
 
-func FindInverseRatioIndex(ratios Ratios, index int, epsilon float64) int {
-	inverseRatio := 1.0 / ratios.At(index)
+func FindInverseRatioIndex(ratios RatioFloats, index int, epsilon float64) int {
+	inverseRatio := 1.0 / ratios[index]
 	closestIndex := FindClosestIndex(ratios, inverseRatio, epsilon)
 	if closestIndex >= 0 {
-		if math.Abs(ratios.At(closestIndex)-inverseRatio) < epsilon {
+		if math.Abs(ratios[closestIndex]-inverseRatio) < epsilon {
 			return closestIndex
 		}
 	}

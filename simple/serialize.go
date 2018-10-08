@@ -48,6 +48,14 @@ type jsonNode struct {
 	Branch *jsonBranch  `json:"branch,omitempty"`
 }
 
+func RatiosToExprs(ratios htree.Ratios) []string {
+	exprs := make([]string, ratios.Len())
+	for i := 0; i < ratios.Len(); i++ {
+		exprs[i] = ratios.Expr(i)
+	}
+	return exprs
+}
+
 func UnmarshalJSON(version int, data []byte) (*Tree, error) {
 	tree := &Tree{}
 	err := json.Unmarshal(data, &tree)
@@ -91,7 +99,7 @@ func (tree *Tree) MarshalJSON() ([]byte, error) {
 
 	jTree := jsonTree{
 		Version:      0,
-		Ratios:       htree.RatiosToExprs(tree.ratios),
+		Ratios:       RatiosToExprs(tree.ratios),
 		RatioIndexXY: tree.ratioIndexXY,
 		RatioIndexZY: tree.ratioIndexZY,
 		Root:         tree.root.ID(),

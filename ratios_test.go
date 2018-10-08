@@ -47,7 +47,8 @@ var nearestIndexTests = []struct {
 
 func TestFindNearestIndex(t *testing.T) {
 	for i, test := range nearestIndexTests {
-		ratios := NewRatios(test.ratios)
+		ratioSource := NewBasicRatioSource(test.ratios)
+		ratios := ratioSource.RatioFloats()
 		index := FindClosestIndex(ratios, test.ratio, 0.0000001)
 
 		if index != test.index {
@@ -62,7 +63,8 @@ func TestFindNearestIndex(t *testing.T) {
 }
 
 func TestFindInverseRatioIndex(t *testing.T) {
-	ratios := NewRatios([]float64{0.5, 1.0, 1.5, 2.0, 8.3})
+	ratioSource := NewBasicRatioSource([]float64{0.5, 1.0, 1.5, 2.0, 8.3})
+		ratios := ratioSource.RatioFloats()
 	index := FindInverseRatioIndex(ratios, 0, 0.0000001)
 	if index != 3 {
 		t.Errorf("inverse ratio index should be 3, got %d", index)
@@ -75,30 +77,36 @@ func TestFindInverseRatioIndex(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
-	ratios := NewRatios([]float64{5.0, 288.04, 7.43, 2828.18, 3.482})
-	subset := NewRatiosSubset(ratios, []float64{5.0, 7.43, 3.482, 99.7}, 0.0000001)
+	ratioSource := NewBasicRatioSource([]float64{0.5, 1.0, 1.5, 2.0, 8.3})
+	ratioSourceSubset := NewRatiosSubset(ratioSource, []float64{5.0, 7.43, 3.482, 99.7}, 0.0000001)
 
-	if l := subset.Len(); l != 3 {
+	ratios := ratioSourceSubset.RatioFloats()
+
+	if l := len(ratios); l != 3 {
 		t.Errorf("subset length should be 3, got %d", l)
 	}
 
-	if v := subset.At(0); v != 3.482 {
+	if v := ratios[0]; v != 3.482 {
 		t.Errorf("first subset item should be 3.482, got %f", v)
 	}
 
-	if v := subset.At(1); v != 5.0 {
+	if v := ratios[1]; v != 5.0 {
 		t.Errorf("second subset item should be 5.0, got %f", v)
 	}
 
-	if v := subset.At(2); v != 7.43 {
+	if v := ratios[2]; v != 7.43 {
 		t.Errorf("third subset item should be 7.43, got %f", v)
 	}
 }
 
 func TestComplements(t *testing.T) {
-	ratios := NewRatios([]float64{0.25, 0.5, 0.75, 1.0, 1.3333333, 2.0, 4.0})
-	complements := NewComplements(ratios, 0.0000001)
-	if len(complements) != ratios.Len() {
+	ratioSource := NewBasicRatioSource([]float64{0.25, 0.5, 0.75, 1.0, 1.3333333, 2.0, 4.0})
+	complements, err := NewComplements(ratioSource.RatioFloats(), 0.0000001)
+	if err != nil{
+		t.Errorf("complements should not have error")
+	}
+
+	if len(complements) != len(ratioSource.RatioFloats()) {
 		t.Errorf("complements length should match ratios length")
 	}
 

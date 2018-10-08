@@ -2,6 +2,7 @@ package hambidgetree
 
 import "fmt"
 
+// Enum used to identify an axis to operate on for a given set of dimensions
 type Axis int
 
 const AxisX = 1

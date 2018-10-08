@@ -71,7 +71,6 @@ type TreeBuilder struct {
 	regions map[htree.NodeID]*dNode
 	//parents    map[htree.NodeID]htree.NodeID
 	ratios     htree.Ratios
-	treeRatios htree.TreeRatios
 	root       *dNode
 	branches   []*dBranch
 	leaves     []*dNode
@@ -119,7 +118,6 @@ func New(ratios htree.Ratios, ratioIndexXY int, ratioIndexZY int) *TreeBuilder {
 		regions: regions,
 		ratios:  ratios,
 		//parents:    make(map[htree.NodeID]htree.NodeID),
-		treeRatios: htree.NewTreeRatios(ratios, 0.0000001),
 		root:       root,
 		leaves:     []*dNode{root},
 	}

@@ -1,7 +1,7 @@
 package randombasic
 
 import (
-	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/print"
 	"github.com/scisci/hambidgetree/generators"
 	"strconv"
 )
@@ -23,7 +23,7 @@ func (gen *RandomBasicTreeGenerator) Parameters(f generators.ParameterFormatType
 	}
 
 	return map[string]interface{}{
-		"Ratios":               htree.RatiosParameterString(gen.Ratios.Ratios()),
+		"Ratios":               print.PrintRatios(gen.Ratios.Ratios()),
 		"Container Ratio (XY)": strconv.FormatFloat(gen.XYRatio, 'f', 4, 64),
 		"Container Ratio (ZY)": strconv.FormatFloat(gen.ZYRatio, 'f', 4, 64),
 		"Number of Leaves":     gen.NumLeaves,
