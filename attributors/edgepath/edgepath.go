@@ -138,7 +138,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree htree.Tree, attrs *attr
 	rand.Seed(attributor.Seed)
 	//epsilon := 0.0000001
 
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 	//dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	matrix := algo.BuildAdjacencyMatrix(tree, regionMap)
 
@@ -174,7 +174,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree htree.Tree, attrs *attr
 		}
 
 		// Also need to check this neighbor against the edges
-		dim := regionMap.Region(leafID).Dimension()
+		dim := regionMap[leafID].Dimension()
 
 		for _, e := range edges {
 			if e.dim.DistanceSquared(dim) < 0.0000001 {

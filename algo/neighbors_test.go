@@ -12,7 +12,7 @@ import (
 func TestNeighbors2D(t *testing.T) {
 	tree := grid.New2D(2)
 	leaves := htree.FindLeaves(tree)
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	leaf := leaves[0]
 
@@ -25,7 +25,7 @@ func TestNeighbors2D(t *testing.T) {
 func TestNeighbors3D(t *testing.T) {
 	tree := grid.New3D(3)
 	leaves := htree.FindLeaves(tree)
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	leaf := leaves[0]
 
@@ -49,7 +49,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 	}
 
 	leaves := htree.FindLeaves(tree)
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	//dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	//leaves := tree.Leaves()
@@ -57,7 +57,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 	for _, leaf := range leaves {
 		neighbors := algo.FindNeighbors(tree, leaf, regionMap)
 
-		dim := regionMap.Region(leaf.ID()).Dimension()
+		dim := regionMap[leaf.ID()].Dimension()
 
 		// Make sure that each leaf that is not in neighbors is actually not a
 		// neighbor.
@@ -74,7 +74,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 				}
 			}
 
-			otherDim := regionMap.Region(other.ID()).Dimension()
+			otherDim := regionMap[other.ID()].Dimension()
 			isCalcNeighbor := dim.DistanceSquared(otherDim) < 0.0000001
 			if isCalcNeighbor != isNeighbor {
 				t.Errorf("Neighbor incorrect, expected %t, got %t", isNeighbor, isCalcNeighbor)
@@ -85,7 +85,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 
 func TestAdjacencyMatrix(t *testing.T) {
 	tree := grid.New2D(2)
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 	matrix := algo.BuildAdjacencyMatrix(tree, regionMap)
 	leaves := htree.FindLeaves(tree)
 

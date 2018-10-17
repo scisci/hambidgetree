@@ -46,24 +46,6 @@ func (node *dNode) RatioIndexZY() int {
 	return node.ratioIndexZY
 }
 
-type treeRegions struct {
-	offset *htree.Vector
-	scale  float64
-	lookup map[htree.NodeID]*dNode
-}
-
-func (tr *treeRegions) Offset() *htree.Vector {
-	return tr.offset
-}
-
-func (tr *treeRegions) Scale() float64 {
-	return tr.scale
-}
-
-func (tr *treeRegions) Region(id htree.NodeID) htree.Region {
-	return tr.lookup[id]
-}
-
 type TreeBuilder struct {
 	idgen   *uniqueIDGen
 	offset  *htree.Vector
@@ -186,7 +168,7 @@ func (b *TreeBuilder) Branch(leafID htree.NodeID, splitType htree.SplitType, lef
 	return leftNode, rightNode
 }
 
-func (b *TreeBuilder) Build() (*simple.Tree, htree.TreeRegions) {
+func (b *TreeBuilder) Build() (*simple.Tree, htree.RegionMap) {
 	simpleBranches := make(map[htree.NodeID]*simple.Branch)
 	simpleNodes := make(map[htree.NodeID]*simple.Node)
 	simpleParents := make(map[htree.NodeID]htree.NodeID)
@@ -215,14 +197,13 @@ func (b *TreeBuilder) Build() (*simple.Tree, htree.TreeRegions) {
 		)
 	}
 
-	regions := &treeRegions{
-		offset: b.offset,
-		scale:  b.scale,
-		lookup: b.regions,
+	var regionMap = make(map[htree.NodeID]htree.Region)
+	for k, v := range b.regions {
+		regionMap[k] = v
 	}
 
 	rootBranch := simpleBranches[b.root.id]
 	root := simple.NewNode(b.root.id, rootBranch)
 	simpleNodes[root.ID()] = root
-	return simple.NewTree(b.ratioSource, b.root.ratioIndexXY, b.root.ratioIndexZY, root, simpleNodes, simpleParents), regions
+	return simple.NewTree(b.ratioSource, b.root.ratioIndexXY, b.root.ratioIndexZY, root, simpleNodes, simpleParents), regionMap
 }

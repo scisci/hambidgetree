@@ -1,5 +1,7 @@
 package hambidgetree
 
+var Origin = &Vector{0.0, 0.0, 0.0}
+
 type Vector struct {
 	x float64
 	y float64

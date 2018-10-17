@@ -6,10 +6,10 @@ import (
 
 // Go up the tree and select all 'other' leaves, then recursively visit any
 // branches that intersect our leaf until we find leaves that intersect
-func FindNeighbors(tree htree.Tree, node htree.Node, regionLookup htree.TreeRegions) []htree.Node {
+func FindNeighbors(tree htree.Tree, node htree.Node, regionMap htree.RegionMap) []htree.Node {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
-	dim := regionLookup.Region(node.ID()).Dimension()
+	dim := regionMap[node.ID()].Dimension()
 
 	var neighbors []htree.Node
 
@@ -38,7 +38,7 @@ func FindNeighbors(tree htree.Tree, node htree.Node, regionLookup htree.TreeRegi
 		other := stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
 
-		otherDim := regionLookup.Region(other.ID()).Dimension()
+		otherDim := regionMap[other.ID()].Dimension()
 
 		dist := dim.DistanceSquared(otherDim)
 		if dist > epsilon {

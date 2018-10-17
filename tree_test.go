@@ -9,9 +9,9 @@ import (
 func TestTreeGrid2D(t *testing.T) {
 	tree := grid.New2D(4)
 	leaves := htree.FindLeaves(tree)
-	regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
-	baseDim := regionMap.Region(tree.Root().ID()).Dimension()
+	baseDim := regionMap[tree.Root().ID()].Dimension()
 	if baseDim.Width() != 1.0 {
 		t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 	}
@@ -21,7 +21,7 @@ func TestTreeGrid2D(t *testing.T) {
 	}
 
 	for _, leaf := range leaves {
-		dim := regionMap.Region(leaf.ID()).Dimension()
+		dim := regionMap[leaf.ID()].Dimension()
 		if dim.Width() != 0.25 {
 			t.Errorf("Tree cell width should be 0.25, got %f", dim.Width())
 		}
@@ -70,9 +70,9 @@ func TestTreeGrid3D(t *testing.T) {
 	for _, test := range grid3DTests {
 		tree := grid.New3D(test.levels)
 		leaves := htree.FindLeaves(tree)
-		regionMap := htree.NewNodeRegionMap(tree, htree.Origin, htree.UnityScale)
+		regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
-		baseDim := regionMap.Region(tree.Root().ID()).Dimension()
+		baseDim := regionMap[tree.Root().ID()].Dimension()
 		if baseDim.Width() != 1.0 {
 			t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 		}
@@ -86,7 +86,7 @@ func TestTreeGrid3D(t *testing.T) {
 		}
 
 		for _, leaf := range leaves {
-			dim := regionMap.Region(leaf.ID()).Dimension()
+			dim := regionMap[leaf.ID()].Dimension()
 			if dim.Width() != test.width {
 				t.Errorf("Tree cell width should be %f got %f", test.width, dim.Width())
 			}

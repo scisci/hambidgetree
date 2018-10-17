@@ -7,8 +7,6 @@ import (
 
 var ErrNotFound = errors.New("Not Found")
 
-var Origin = &Vector{0.0, 0.0, 0.0}
-
 const UnityScale = 1.0
 
 type Region interface {
@@ -229,34 +227,12 @@ func (it *RegionIterator) Next() NodeRegion {
 	return node
 }
 
-type NodeRegionMap struct {
-	offset *Vector
-	scale  float64
-	lookup map[NodeID]Region
-}
-
-func NewNodeRegionMap(tree Tree, offset *Vector, scale float64) *NodeRegionMap {
+func NewTreeRegionMap(tree Tree, offset *Vector, scale float64) RegionMap {
 	lookup := make(map[NodeID]Region)
 	it := NewRegionIterator(tree, offset, scale)
 	for it.HasNext() {
 		region := it.Next()
 		lookup[region.Node().ID()] = region
 	}
-	return &NodeRegionMap{
-		offset: offset,
-		scale:  scale,
-		lookup: lookup,
-	}
-}
-
-func (m *NodeRegionMap) Offset() *Vector {
-	return m.offset
-}
-
-func (m *NodeRegionMap) Scale() float64 {
-	return m.scale
-}
-
-func (m *NodeRegionMap) Region(id NodeID) Region {
-	return m.lookup[id]
+	return lookup
 }

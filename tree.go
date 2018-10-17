@@ -9,6 +9,7 @@ package hambidgetree
 // node: [id: id, split: hvd, index, left: id, right: id]
 
 type NodeID int64
+type RegionMap map[NodeID]Region
 
 type Tree interface {
 	RatioSource() RatioSource
@@ -37,10 +38,4 @@ type Leaf interface {
 	ID() NodeID
 	RatioIndexXY() int
 	RatioIndexZY() int
-}
-
-type TreeRegions interface {
-	Offset() *Vector
-	Scale() float64
-	Region(id NodeID) Region
 }
