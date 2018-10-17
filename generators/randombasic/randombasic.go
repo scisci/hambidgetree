@@ -11,55 +11,55 @@ import (
 const defaultEpsilon = 0.0000001
 
 type RandomBasicTreeGenerator struct {
-	NumLeaves int
-	RatioSource    htree.RatioSource
+	NumLeaves   int
+	RatioSource htree.RatioSource
 	Complements htree.Complements
-	Seed      int64
-	XYRatio   float64
-	ZYRatio   float64
+	Seed        int64
+	XYRatio     float64
+	ZYRatio     float64
 }
 
 type leafSplits struct {
-	leaf   htree.ImmutableLeaf
+	leaf   htree.Leaf
 	splits []htree.Split
 }
 
 func New(ratioSource htree.RatioSource, containerRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
-	complements, err := htree.NewComplements(ratioSource.RatioFloats(), defaultEpsilon)
-	if (err !=nil)  {
+	complements, err := htree.NewComplements(ratioSource.Ratios(), defaultEpsilon)
+	if err != nil {
 		return nil, err
 	}
 
 	return &RandomBasicTreeGenerator{
-		NumLeaves: numLeaves,
+		NumLeaves:   numLeaves,
 		RatioSource: ratioSource,
-		Complements:    complements,
-		Seed:      seed,
-		XYRatio:   containerRatio,
+		Complements: complements,
+		Seed:        seed,
+		XYRatio:     containerRatio,
 	}, nil
 }
 
 func New3D(ratioSource htree.RatioSource, xyRatio, zyRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
-	complements, err := htree.NewComplements(ratioSource.RatioFloats(), defaultEpsilon)
-	if (err !=nil)  {
+	complements, err := htree.NewComplements(ratioSource.Ratios(), defaultEpsilon)
+	if err != nil {
 		return nil, err
 	}
-	
+
 	return &RandomBasicTreeGenerator{
-		NumLeaves: numLeaves,
+		NumLeaves:   numLeaves,
 		RatioSource: ratioSource,
-		Complements:    complements,
-		Seed:      seed,
-		XYRatio:   xyRatio,
-		ZYRatio:   zyRatio,
-	},nil
+		Complements: complements,
+		Seed:        seed,
+		XYRatio:     xyRatio,
+		ZYRatio:     zyRatio,
+	}, nil
 }
 
 func (gen *RandomBasicTreeGenerator) Is3D() bool {
 	return gen.ZYRatio > 0
 }
 
-func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf htree.ImmutableLeaf, complements htree.Complements) *leafSplits {
+func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf htree.Leaf, complements htree.Complements) *leafSplits {
 	ratioIndex := leaf.RatioIndexXY() //   tree.RatioIndex(leaf.Node, htree.RatioPlaneXY)
 
 	if len(complements[ratioIndex]) == 0 {
@@ -72,8 +72,8 @@ func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf htree.ImmutableLeaf, co
 	}
 }
 
-func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, complements htree.Complements) *leafSplits {
-	ratios := gen.RatioSource.RatioFloats()
+func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.Leaf, complements htree.Complements) *leafSplits {
+	ratios := gen.RatioSource.Ratios()
 	// We have horizontal and vertical splits defined in the complements array.
 	// We have 3 possible planes that could be divided vertically/horizontally.
 	xyRatioIndex := leaf.RatioIndexXY()
@@ -178,10 +178,10 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, co
 	}
 }
 
-func (gen *RandomBasicTreeGenerator) Generate() (htree.ImmutableTree, error) {
+func (gen *RandomBasicTreeGenerator) Generate() (htree.Tree, error) {
 	rand.Seed(gen.Seed)
 
-	ratios := gen.RatioSource.RatioFloats()
+	ratios := gen.RatioSource.Ratios()
 
 	epsilon := htree.CalculateRatiosEpsilon(ratios)
 	xyRatioIndex := htree.FindClosestIndex(ratios, gen.XYRatio, epsilon)

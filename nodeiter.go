@@ -1,20 +1,20 @@
 package hambidgetree
 
-type ImmutableNodeIterator struct {
-	nodes []ImmutableNode
+type NodeIterator struct {
+	nodes []Node
 }
 
-func NewImmutableNodeIterator(root ImmutableNode) *ImmutableNodeIterator {
-	return &ImmutableNodeIterator{
-		nodes: []ImmutableNode{root},
+func NewNodeIterator(root Node) *NodeIterator {
+	return &NodeIterator{
+		nodes: []Node{root},
 	}
 }
 
-func (it *ImmutableNodeIterator) HasNext() bool {
+func (it *NodeIterator) HasNext() bool {
 	return len(it.nodes) > 0
 }
 
-func (it *ImmutableNodeIterator) Next() ImmutableNode {
+func (it *NodeIterator) Next() Node {
 	if !it.HasNext() {
 		return nil
 	}
@@ -30,9 +30,9 @@ func (it *ImmutableNodeIterator) Next() ImmutableNode {
 	return node
 }
 
-func FindLeaves(tree ImmutableTree) []ImmutableNode {
-	var leaves []ImmutableNode
-	it := NewImmutableNodeIterator(tree.Root())
+func FindLeaves(tree Tree) []Node {
+	var leaves []Node
+	it := NewNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
 		if node.Branch() == nil {

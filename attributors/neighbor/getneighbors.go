@@ -4,8 +4,8 @@ import (
 	htree "github.com/scisci/hambidgetree"
 )
 
-func getNeighbors(leaves []htree.ImmutableNode, regionMap htree.TreeRegions, epsilon float64) []htree.ImmutableNode {
-	var candidates []htree.ImmutableNode
+func getNeighbors(leaves []htree.Node, regionMap htree.TreeRegions, epsilon float64) []htree.Node {
+	var candidates []htree.Node
 	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
 		dim := regionMap.Region(leaves[i].ID()).Dimension()

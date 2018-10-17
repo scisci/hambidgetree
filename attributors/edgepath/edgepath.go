@@ -134,7 +134,7 @@ func New(paths []EdgePath, seed int64, chaos float64) *EdgePathAttributor {
 	}
 }
 
-func (attributor *EdgePathAttributor) AddAttributes(tree htree.ImmutableTree, attrs *attributors.NodeAttributer) error {
+func (attributor *EdgePathAttributor) AddAttributes(tree htree.Tree, attrs *attributors.NodeAttributer) error {
 	rand.Seed(attributor.Seed)
 	//epsilon := 0.0000001
 

@@ -15,5 +15,5 @@ type TreeGenerator interface {
 	Name() string
 	Description() string
 	Parameters(f ParameterFormatType) map[string]interface{}
-	Generate() (htree.ImmutableTree, error)
+	Generate() (htree.Tree, error)
 }

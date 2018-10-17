@@ -48,7 +48,7 @@ func FreeRect(r C.struct_HTreeRect) {
 
 var treeRegMu sync.Mutex
 var treeRegIndex = 0
-var treeReg = make(map[int]htree.ImmutableTree)
+var treeReg = make(map[int]htree.Tree)
 
 //export CreateRandomBasicTree
 func CreateRandomBasicTree(containerRatio float64, numRects int, seed int64) int {
@@ -137,7 +137,7 @@ func ReleaseTree(id int) {
 	fmt.Printf("Released tree handle %d\n", id)
 }
 
-func registerTree(tree htree.ImmutableTree) int {
+func registerTree(tree htree.Tree) int {
 	treeRegMu.Lock()
 	defer treeRegMu.Unlock()
 	treeRegIndex++
@@ -146,7 +146,7 @@ func registerTree(tree htree.ImmutableTree) int {
 	return treeRegIndex
 }
 
-func lookupTree(index int) htree.ImmutableTree {
+func lookupTree(index int) htree.Tree {
 	treeRegMu.Lock()
 	defer treeRegMu.Unlock()
 	return treeReg[index]

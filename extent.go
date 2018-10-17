@@ -3,13 +3,24 @@ package hambidgetree
 import (
 	"fmt"
 	"math"
+	"errors"
 )
 
+var ErrInvalidExtent = errors.New("Invalid extent")
+
+// Extent
+//
+// Represents a range along a dimension. Start is included and end is not 
+// included.
 type Extent struct {
 	start, end float64
 }
 
 func NewExtent(start, end float64) Extent {
+	if (end < start) {
+		panic(ErrInvalidExtent)
+	}
+
 	return Extent{
 		start: start,
 		end:   end,

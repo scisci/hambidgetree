@@ -7,13 +7,13 @@ import (
 	"testing"
 )
 
-type nodeListByID []htree.ImmutableNode
+type nodeListByID []htree.Node
 
 func (a nodeListByID) Len() int           { return len(a) }
 func (a nodeListByID) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a nodeListByID) Less(i, j int) bool { return a[i].ID() < a[j].ID() }
 
-func arrayContentsEqual(arr1, arr2 []htree.ImmutableNode) bool {
+func arrayContentsEqual(arr1, arr2 []htree.Node) bool {
 	if len(arr1) != len(arr2) {
 		return false
 	}

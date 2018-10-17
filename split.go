@@ -1,41 +1,10 @@
 package hambidgetree
 
-import "strconv"
-
 type SplitType int
 
 const SplitTypeHorizontal SplitType = 1 // Split along Y axis
 const SplitTypeVertical SplitType = 2   // Split along X axis
 const SplitTypeDepth SplitType = 3      // Split along Z axis
-
-func (splitType SplitType) ShortString() string {
-	switch splitType {
-	case SplitTypeHorizontal:
-		return "h"
-	case SplitTypeVertical:
-		return "v"
-	case SplitTypeDepth:
-		return "d"
-	default:
-		return "-"
-	}
-}
-
-func SplitTypeForShortString(shortString string) (SplitType, bool) {
-	if shortString == "h" {
-		return SplitTypeHorizontal, true
-	}
-
-	if shortString == "v" {
-		return SplitTypeVertical, true
-	}
-
-	if shortString == "d" {
-		return SplitTypeDepth, true
-	}
-
-	return SplitTypeHorizontal, false
-}
 
 type Split interface {
 	LeftIndex() int
@@ -43,7 +12,6 @@ type Split interface {
 	IsHorizontal() bool
 	IsVertical() bool
 	IsDepth() bool
-	String() string
 	Type() SplitType
 	Inverse() Split
 }
@@ -84,25 +52,6 @@ func (s *split) IsVertical() bool {
 
 func (s *split) IsDepth() bool {
 	return s.typ == SplitTypeDepth
-}
-
-func (s *split) String() string {
-	str := "Split{"
-	switch s.typ {
-	case SplitTypeHorizontal:
-		str = str + "h"
-	case SplitTypeVertical:
-		str = str + "v"
-	case SplitTypeDepth:
-		str = str + "d"
-	default:
-		str = str + "?"
-	}
-
-	str = str + "," + strconv.Itoa(s.leftIndex-1)
-	str = str + "," + strconv.Itoa(s.rightIndex-1)
-	str = str + "}"
-	return str
 }
 
 // Index arguments are 0 based, but internally we start at 1. This allows the

@@ -48,7 +48,7 @@ var nearestIndexTests = []struct {
 func TestFindNearestIndex(t *testing.T) {
 	for i, test := range nearestIndexTests {
 		ratioSource := NewBasicRatioSource(test.ratios)
-		ratios := ratioSource.RatioFloats()
+		ratios := ratioSource.Ratios()
 		index := FindClosestIndex(ratios, test.ratio, 0.0000001)
 
 		if index != test.index {
@@ -64,7 +64,7 @@ func TestFindNearestIndex(t *testing.T) {
 
 func TestFindInverseRatioIndex(t *testing.T) {
 	ratioSource := NewBasicRatioSource([]float64{0.5, 1.0, 1.5, 2.0, 8.3})
-		ratios := ratioSource.RatioFloats()
+	ratios := ratioSource.Ratios()
 	index := FindInverseRatioIndex(ratios, 0, 0.0000001)
 	if index != 3 {
 		t.Errorf("inverse ratio index should be 3, got %d", index)
@@ -83,7 +83,7 @@ func TestSubset(t *testing.T) {
 		t.Errorf("failed to create ratio subset %v", err)
 	}
 
-	ratios := ratioSourceSubset.RatioFloats()
+	ratios := ratioSourceSubset.Ratios()
 
 	if l := len(ratios); l != 3 {
 		t.Errorf("subset length should be 3, got %d", l)
@@ -104,12 +104,12 @@ func TestSubset(t *testing.T) {
 
 func TestComplements(t *testing.T) {
 	ratioSource := NewBasicRatioSource([]float64{0.25, 0.5, 0.75, 1.0, 1.3333333, 2.0, 4.0})
-	complements, err := NewComplements(ratioSource.RatioFloats(), 0.0000001)
-	if err != nil{
+	complements, err := NewComplements(ratioSource.Ratios(), 0.0000001)
+	if err != nil {
 		t.Errorf("complements should not have error")
 	}
 
-	if len(complements) != len(ratioSource.RatioFloats()) {
+	if len(complements) != len(ratioSource.Ratios()) {
 		t.Errorf("complements length should match ratios length")
 	}
 

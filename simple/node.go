@@ -23,7 +23,7 @@ func (n *Node) ID() htree.NodeID {
 	return n.id
 }
 
-func (n *Node) Branch() htree.ImmutableBranch {
+func (n *Node) Branch() htree.Branch {
 	if n.branch == nil {
 		return nil
 	}
@@ -53,11 +53,11 @@ func (b *Branch) SplitType() htree.SplitType {
 	return b.splitType
 }
 
-func (b *Branch) Left() htree.ImmutableNode {
+func (b *Branch) Left() htree.Node {
 	return b.left
 }
 
-func (b *Branch) Right() htree.ImmutableNode {
+func (b *Branch) Right() htree.Node {
 	return b.right
 }
 
@@ -74,7 +74,7 @@ type Tree struct {
 	parents      ParentLookup
 	ratioIndexXY int
 	ratioIndexZY int
-	ratioSource      htree.RatioSource
+	ratioSource  htree.RatioSource
 	root         *Node
 }
 
@@ -88,12 +88,12 @@ func NewTree(ratioSource htree.RatioSource, ratioIndexXY, ratioIndexZY int, root
 		parents:      parents,
 		ratioIndexXY: ratioIndexXY,
 		ratioIndexZY: ratioIndexZY,
-		ratioSource:       ratioSource,
+		ratioSource:  ratioSource,
 		root:         root,
 	}
 }
 
-func (tree *Tree) Parent(id htree.NodeID) htree.ImmutableNode {
+func (tree *Tree) Parent(id htree.NodeID) htree.Node {
 	if parentID, ok := tree.parents[id]; ok {
 		return tree.nodes[parentID]
 	}
@@ -101,7 +101,7 @@ func (tree *Tree) Parent(id htree.NodeID) htree.ImmutableNode {
 	return nil
 }
 
-func (tree *Tree) Node(id htree.NodeID) htree.ImmutableNode {
+func (tree *Tree) Node(id htree.NodeID) htree.Node {
 	return tree.nodes[id]
 }
 
@@ -109,7 +109,7 @@ func (tree *Tree) RatioSource() htree.RatioSource {
 	return tree.ratioSource
 }
 
-func (tree *Tree) Root() htree.ImmutableNode {
+func (tree *Tree) Root() htree.Node {
 	return tree.root
 }
 

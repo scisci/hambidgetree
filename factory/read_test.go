@@ -34,7 +34,7 @@ func TestSerialize(t *testing.T) {
 		t.Errorf("failed to create random basic %v", err)
 	}
 
-	treeTests := []htree.ImmutableTree{
+	treeTests := []htree.Tree{
 		g2, g3, rb2, rb3,
 	}
 

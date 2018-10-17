@@ -19,7 +19,7 @@ type Region interface {
 
 type NodeRegion interface {
 	Region
-	Node() ImmutableNode
+	Node() Node
 }
 
 type SimpleRatioRegion struct {
@@ -45,7 +45,7 @@ func IsRatioIndexDefined(index int) bool {
 }
 
 // Split the given region using the given ratioIndex
-func SplitRegionHorizontal(ratios RatioFloats, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionHorizontal(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
 	epsilon := 0.0000001
 
 	dimension := region.Dimension()
@@ -88,7 +88,7 @@ func SplitRegionHorizontal(ratios RatioFloats, region Region, leftIndex, rightIn
 	return
 }
 
-func SplitRegionVertical(ratios RatioFloats, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionVertical(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
@@ -111,7 +111,7 @@ func SplitRegionVertical(ratios RatioFloats, region Region, leftIndex, rightInde
 	return
 }
 
-func SplitRegionDepth(ratios RatioFloats, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionDepth(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
@@ -135,23 +135,22 @@ func SplitRegionDepth(ratios RatioFloats, region Region, leftIndex, rightIndex i
 	return
 }
 
-
 type RegionIterator struct {
-	tree    ImmutableTree
+	tree    Tree
 	regions []*nodeRatioRegion
 }
 
 type nodeRatioRegion struct {
-	ImmutableNode
+	node Node
 	*SimpleRatioRegion
 }
 
-func (region *nodeRatioRegion) Node() ImmutableNode {
-	return region.ImmutableNode
+func (region *nodeRatioRegion) Node() Node {
+	return region.node
 }
 
-func NewRegionIterator(tree ImmutableTree, offset *Vector, scale float64) *RegionIterator {
-	ratios := tree.RatioSource().RatioFloats()
+func NewRegionIterator(tree Tree, offset *Vector, scale float64) *RegionIterator {
+	ratios := tree.RatioSource().Ratios()
 
 	ratioIndexXY := tree.RatioIndexXY()
 	ratioIndexZY := tree.RatioIndexZY()
@@ -194,8 +193,8 @@ func (it *RegionIterator) Next() NodeRegion {
 	node := it.regions[len(it.regions)-1]
 	it.regions = it.regions[:len(it.regions)-1]
 
-	branch := node.Branch()
-	ratios := it.tree.RatioSource().RatioFloats()
+	branch := node.node.Branch()
+	ratios := it.tree.RatioSource().Ratios()
 
 	if branch != nil {
 		left := branch.Left()
@@ -236,7 +235,7 @@ type NodeRegionMap struct {
 	lookup map[NodeID]Region
 }
 
-func NewNodeRegionMap(tree ImmutableTree, offset *Vector, scale float64) *NodeRegionMap {
+func NewNodeRegionMap(tree Tree, offset *Vector, scale float64) *NodeRegionMap {
 	lookup := make(map[NodeID]Region)
 	it := NewRegionIterator(tree, offset, scale)
 	for it.HasNext() {

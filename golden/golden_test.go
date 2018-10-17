@@ -13,8 +13,8 @@ func TestGolden(t *testing.T) {
 		t.Errorf("Golden ratio expr error %v", err)
 	}
 
-	r1f := r1.RatioFloats()
-	r2f := r2.RatioFloats()
+	r1f := r1.Ratios()
+	r2f := r2.Ratios()
 
 	if len(r1f) != len(r2f) {
 		t.Errorf("Golden ratios lengths don't match %d & %d", len(r1f), len(r2f))

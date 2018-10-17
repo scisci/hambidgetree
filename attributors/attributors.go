@@ -18,5 +18,5 @@ type TreeAttributor interface {
 	Name() string
 	Description() string
 	Parameters(f ParameterFormatType) map[string]interface{}
-	AddAttributes(tree htree.ImmutableTree, attrs *NodeAttributer) error
+	AddAttributes(tree htree.Tree, attrs *NodeAttributer) error
 }

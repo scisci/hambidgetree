@@ -49,6 +49,36 @@ type jsonNode struct {
 }
 
 
+func shortStringForSplitType(splitType htree.SplitType) string {
+	switch splitType {
+	case htree.SplitTypeHorizontal:
+		return "h"
+	case htree.SplitTypeVertical:
+		return "v"
+	case htree.SplitTypeDepth:
+		return "d"
+	default:
+		return "-"
+	}
+}
+
+
+func splitTypeForShortString(shortString string) (htree.SplitType, bool) {
+	if shortString == "h" {
+		return htree.SplitTypeHorizontal, true
+	}
+
+	if shortString == "v" {
+		return htree.SplitTypeVertical, true
+	}
+
+	if shortString == "d" {
+		return htree.SplitTypeDepth, true
+	}
+
+	return htree.SplitTypeHorizontal, false
+}
+
 
 func UnmarshalJSON(version int, data []byte) (*Tree, error) {
 	tree := &Tree{}
@@ -77,7 +107,7 @@ func (tree *Tree) MarshalJSON() ([]byte, error) {
 		var jBranch *jsonBranch
 		if branch != nil {
 			jBranch = &jsonBranch{
-				SplitType:  branch.splitType.ShortString(),
+				SplitType:  shortStringForSplitType(branch.splitType),
 				LeftIndex:  branch.leftIndex,
 				RightIndex: branch.rightIndex,
 				Left:       branch.left.id,
@@ -122,7 +152,7 @@ func (tree *Tree) UnmarshalJSON(data []byte) error {
 		if jNode.Branch != nil {
 			jBranch := jNode.Branch
 
-			splitType, ok := htree.SplitTypeForShortString(jBranch.SplitType)
+			splitType, ok := splitTypeForShortString(jBranch.SplitType)
 			if !ok {
 				return InvalidSplitType
 			}

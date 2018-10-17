@@ -6,18 +6,18 @@ import (
 
 // Go up the tree and select all 'other' leaves, then recursively visit any
 // branches that intersect our leaf until we find leaves that intersect
-func FindNeighbors(tree htree.ImmutableTree, node htree.ImmutableNode, regionLookup htree.TreeRegions) []htree.ImmutableNode {
+func FindNeighbors(tree htree.Tree, node htree.Node, regionLookup htree.TreeRegions) []htree.Node {
 	// TODO: performance test NodeDimension, if its too slow, just use a
 	// DimensionalNode which has the hierarchy and the dimensions built in.
 	dim := regionLookup.Region(node.ID()).Dimension()
 
-	var neighbors []htree.ImmutableNode
+	var neighbors []htree.Node
 
 	epsilon := 0.0000001
 
 	ref := node
 	parent := tree.Parent(ref.ID())
-	var stack []htree.ImmutableNode
+	var stack []htree.Node
 	for parent != nil {
 		parentBranch := parent.Branch()
 

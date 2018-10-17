@@ -70,10 +70,10 @@ type TreeBuilder struct {
 	scale   float64
 	regions map[htree.NodeID]*dNode
 	//parents    map[htree.NodeID]htree.NodeID
-	ratioSource     htree.RatioSource
-	root       *dNode
-	branches   []*dBranch
-	leaves     []*dNode
+	ratioSource htree.RatioSource
+	root        *dNode
+	branches    []*dBranch
+	leaves      []*dNode
 }
 
 func New2D(ratioSource htree.RatioSource, ratioIndex int) *TreeBuilder {
@@ -89,7 +89,7 @@ func New(ratioSource htree.RatioSource, ratioIndexXY int, ratioIndexZY int) *Tre
 	scale := htree.UnityScale
 	regions := make(map[htree.NodeID]*dNode)
 
-	ratios := ratioSource.RatioFloats()
+	ratios := ratioSource.Ratios()
 	ratioXY := ratios[ratioIndexXY]
 	ratioZY := 0.0
 
@@ -113,25 +113,25 @@ func New(ratioSource htree.RatioSource, ratioIndexXY int, ratioIndexZY int) *Tre
 	regions[root.id] = root
 
 	return &TreeBuilder{
-		idgen:   idgen,
-		offset:  offset,
-		scale:   scale,
-		regions: regions,
-		ratioSource:  ratioSource,
-		root:       root,
-		leaves:     []*dNode{root},
+		idgen:       idgen,
+		offset:      offset,
+		scale:       scale,
+		regions:     regions,
+		ratioSource: ratioSource,
+		root:        root,
+		leaves:      []*dNode{root},
 	}
 }
 
-func (b *TreeBuilder) Leaves() []htree.ImmutableLeaf {
-	leaves := make([]htree.ImmutableLeaf, len(b.leaves))
+func (b *TreeBuilder) Leaves() []htree.Leaf {
+	leaves := make([]htree.Leaf, len(b.leaves))
 	for i, v := range b.leaves {
 		leaves[i] = v
 	}
 	return leaves
 }
 
-func (b *TreeBuilder) Branch(leafID htree.NodeID, splitType htree.SplitType, leftIndex, rightIndex int) (left, right htree.ImmutableLeaf) {
+func (b *TreeBuilder) Branch(leafID htree.NodeID, splitType htree.SplitType, leftIndex, rightIndex int) (left, right htree.Leaf) {
 	// Replace that node with a new node
 	index := -1
 	for i := 0; i < len(b.leaves); i++ {
@@ -145,7 +145,7 @@ func (b *TreeBuilder) Branch(leafID htree.NodeID, splitType htree.SplitType, lef
 		panic("Leaf is not part of this builder")
 	}
 
-	ratios := b.ratioSource.RatioFloats()
+	ratios := b.ratioSource.Ratios()
 
 	var leftRegion, rightRegion htree.Region
 	leaf := b.leaves[index]

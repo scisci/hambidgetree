@@ -13,7 +13,7 @@ type jsonWrapper struct {
 	Tree    json.RawMessage `json:"tree"`
 }
 
-func UnmarshalJSON(data []byte) (htree.ImmutableTree, error) {
+func UnmarshalJSON(data []byte) (htree.Tree, error) {
 	var wrapper *jsonWrapper
 	if err := json.Unmarshal(data, &wrapper); err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func UnmarshalJSON(data []byte) (htree.ImmutableTree, error) {
 	return nil, fmt.Errorf("Unknown type %s", wrapper.Type)
 }
 
-func MarshalJSON(tree htree.ImmutableTree) ([]byte, error) {
+func MarshalJSON(tree htree.Tree) ([]byte, error) {
 	_, ok := tree.(*simple.Tree)
 	if !ok {
 		return nil, fmt.Errorf("Unknown tree type!")

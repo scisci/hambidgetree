@@ -23,7 +23,7 @@ func NewHasNeighborAttributor(maxMarks int, dimension int, seed int64) *HasNeigh
 	}
 }
 
-func (attributor *HasNeighborAttributor) AddAttributes(tree htree.ImmutableTree, attrs *attributors.NodeAttributer) error {
+func (attributor *HasNeighborAttributor) AddAttributes(tree htree.Tree, attrs *attributors.NodeAttributer) error {
 	rand.Seed(attributor.Seed)
 	epsilon := 0.0000001
 
