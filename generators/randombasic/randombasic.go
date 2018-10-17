@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+const defaultEpsilon = 0.0000001
+
 type RandomBasicTreeGenerator struct {
 	NumLeaves int
 	RatioSource    htree.RatioSource
@@ -23,7 +25,7 @@ type leafSplits struct {
 }
 
 func New(ratioSource htree.RatioSource, containerRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
-	complements, err := htree.NewComplements(ratioSource.RatioFloats(), 0.0000001)
+	complements, err := htree.NewComplements(ratioSource.RatioFloats(), defaultEpsilon)
 	if (err !=nil)  {
 		return nil, err
 	}
@@ -38,7 +40,7 @@ func New(ratioSource htree.RatioSource, containerRatio float64, numLeaves int, s
 }
 
 func New3D(ratioSource htree.RatioSource, xyRatio, zyRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
-	complements, err := htree.NewComplements(ratioSource.RatioFloats(), 0.0000001)
+	complements, err := htree.NewComplements(ratioSource.RatioFloats(), defaultEpsilon)
 	if (err !=nil)  {
 		return nil, err
 	}
@@ -71,7 +73,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves2D(leaf htree.ImmutableLeaf, co
 }
 
 func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, complements htree.Complements) *leafSplits {
-	ratios := gen.Ratios.Ratios()
+	ratios := gen.RatioSource.RatioFloats()
 	// We have horizontal and vertical splits defined in the complements array.
 	// We have 3 possible planes that could be divided vertically/horizontally.
 	xyRatioIndex := leaf.RatioIndexXY()
@@ -98,39 +100,39 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, co
 	// the zx plane. If good, then add these to the possibilities as a DepthSplit
 	// (instead of a vertical split)
 
-	xyRatio := ratios.At(xyRatioIndex)
-	zyRatio := ratios.At(zyRatioIndex)
+	xyRatio := ratios[xyRatioIndex]
+	zyRatio := ratios[zyRatioIndex]
 	zxRatio := zyRatio / xyRatio
 	var splits []htree.Split
 
 	for _, xySplit := range xyComplements {
 		if xySplit.IsHorizontal() {
-			cutHeight := htree.RatioNormalHeight(xyRatio, ratios.At(xySplit.LeftIndex()))
-			compHeight := htree.RatioNormalHeight(xyRatio, ratios.At(xySplit.RightIndex()))
+			cutHeight := htree.RatioNormalHeight(xyRatio, ratios[xySplit.LeftIndex()])
+			compHeight := htree.RatioNormalHeight(xyRatio, ratios[xySplit.RightIndex()])
 			zyRatioTop := zyRatio / cutHeight
 			zyRatioBottom := zyRatio / compHeight
-			index := htree.FindClosestIndexWithinRange(ratios, zyRatioTop, 0.0000001)
+			index := htree.FindClosestIndexWithinRange(ratios, zyRatioTop, defaultEpsilon)
 			if index < 0 {
 				continue
 			}
 
-			index = htree.FindClosestIndexWithinRange(ratios, zyRatioBottom, 0.0000001)
+			index = htree.FindClosestIndexWithinRange(ratios, zyRatioBottom, defaultEpsilon)
 			if index < 0 {
 				continue
 				//fmt.Printf("tried to split h ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, zyRatioTop, zyRatioBottom, zyRatioBottom)
 				//panic("right invalid")
 			}
 		} else if xySplit.IsVertical() {
-			cutWidth := htree.RatioNormalWidth(xyRatio, ratios.At(xySplit.LeftIndex()))
-			compWidth := htree.RatioNormalWidth(xyRatio, ratios.At(xySplit.RightIndex()))
+			cutWidth := htree.RatioNormalWidth(xyRatio, ratios[xySplit.LeftIndex()])
+			compWidth := htree.RatioNormalWidth(xyRatio, ratios[xySplit.RightIndex()])
 			zxRatioTop := zxRatio / cutWidth
 			zxRatioBottom := zxRatio / compWidth
-			index := htree.FindClosestIndexWithinRange(ratios, zxRatioTop, 0.0000001)
+			index := htree.FindClosestIndexWithinRange(ratios, zxRatioTop, defaultEpsilon)
 			if index < 0 {
 				continue
 			}
 
-			index = htree.FindClosestIndexWithinRange(ratios, zxRatioBottom, 0.0000001)
+			index = htree.FindClosestIndexWithinRange(ratios, zxRatioBottom, defaultEpsilon)
 			if index < 0 {
 				continue
 				//fmt.Printf("tried to split v ratio (xy:%f, xz:%f, zy:%f) with width %f from ratio %f against xz %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatio, zyRatio, cutWidth, leaf.tree.Ratio(xySplit.LeftIndex()), xzRatio, xzRatioTop, xzRatioBottom, xzRatioBottom)
@@ -148,16 +150,16 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, co
 			continue
 		}
 
-		cutWidth := htree.RatioNormalWidth(zyRatio, ratios.At(zySplit.LeftIndex()))
-		compWidth := htree.RatioNormalWidth(zyRatio, ratios.At(zySplit.RightIndex()))
+		cutWidth := htree.RatioNormalWidth(zyRatio, ratios[zySplit.LeftIndex()])
+		compWidth := htree.RatioNormalWidth(zyRatio, ratios[zySplit.RightIndex()])
 		zxRatioLeft := cutWidth * zxRatio
-		index := htree.FindClosestIndexWithinRange(ratios, zxRatioLeft, 0.0000001)
+		index := htree.FindClosestIndexWithinRange(ratios, zxRatioLeft, defaultEpsilon)
 		if index < 0 {
 			continue
 		}
 
 		zxRatioRight := compWidth * zxRatio
-		index = htree.FindClosestIndexWithinRange(ratios, zxRatioRight, 0.0000001)
+		index = htree.FindClosestIndexWithinRange(ratios, zxRatioRight, defaultEpsilon)
 		if index < 0 {
 			continue
 			//fmt.Printf("tried to split d ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, xzRatioLeft, xzRatioRight, xzRatioRight)
@@ -179,24 +181,29 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.ImmutableLeaf, co
 func (gen *RandomBasicTreeGenerator) Generate() (htree.ImmutableTree, error) {
 	rand.Seed(gen.Seed)
 
-	epsilon := htree.CalculateRatiosEpsilon(gen.Ratios.Ratios())
-	xyRatioIndex := htree.FindClosestIndex(gen.Ratios.Ratios(), gen.XYRatio, epsilon)
+	ratios := gen.RatioSource.RatioFloats()
+
+	epsilon := htree.CalculateRatiosEpsilon(ratios)
+	xyRatioIndex := htree.FindClosestIndex(ratios, gen.XYRatio, epsilon)
 	if xyRatioIndex < 0 {
 		return nil, errors.New("Container ratio not found in list of ratios.")
 	}
 
-	complements := gen.Ratios.Complements()
+	complements, err := htree.NewComplements(ratios, defaultEpsilon)
+	if err != nil {
+		return nil, err
+	}
 
 	// Generate the container
 	var treeBuilder *builder.TreeBuilder
 	if !gen.Is3D() {
-		treeBuilder = builder.New2D(gen.Ratios.Ratios(), xyRatioIndex)
+		treeBuilder = builder.New2D(gen.RatioSource, xyRatioIndex)
 	} else {
-		zyRatioIndex := htree.FindClosestIndex(gen.Ratios.Ratios(), gen.ZYRatio, epsilon)
+		zyRatioIndex := htree.FindClosestIndex(ratios, gen.ZYRatio, epsilon)
 		if zyRatioIndex < 0 {
 			return nil, errors.New("Container ratio not found in list of ratios.")
 		}
-		treeBuilder = builder.New3D(gen.Ratios.Ratios(), xyRatioIndex, zyRatioIndex)
+		treeBuilder = builder.New3D(gen.RatioSource, xyRatioIndex, zyRatioIndex)
 	}
 
 	//leafCount := 1

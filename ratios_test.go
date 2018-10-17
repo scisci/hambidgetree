@@ -77,8 +77,11 @@ func TestFindInverseRatioIndex(t *testing.T) {
 }
 
 func TestSubset(t *testing.T) {
-	ratioSource := NewBasicRatioSource([]float64{0.5, 1.0, 1.5, 2.0, 8.3})
-	ratioSourceSubset := NewRatiosSubset(ratioSource, []float64{5.0, 7.43, 3.482, 99.7}, 0.0000001)
+	ratioSource := NewBasicRatioSource([]float64{5.0, 288.04, 7.43, 2828.18, 3.482})
+	ratioSourceSubset, err := NewRatioSourceSubset(ratioSource, []float64{5.0, 7.43, 3.482}, 0.0000001)
+	if err != nil {
+		t.Errorf("failed to create ratio subset %v", err)
+	}
 
 	ratios := ratioSourceSubset.RatioFloats()
 

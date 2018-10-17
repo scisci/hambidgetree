@@ -97,10 +97,13 @@ func ContainsLetter(s string) bool {
 	return false
 }
 
-func Solve(s string) float64 {
+func Solve(s string) (float64, error) {
 	p := NewParser(strings.NewReader(s))
-	stack, _ := p.Parse()
+	stack, err := p.Parse()
+	if err != nil {
+		return 0.0, err
+	}
 	stack = ShuntingYard(stack)
 	answer := SolvePostfix(stack)
-	return answer
+	return answer, nil
 }

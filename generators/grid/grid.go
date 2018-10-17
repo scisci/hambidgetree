@@ -11,8 +11,8 @@ import (
 // Even levels split all leaves in half using a vertical line
 // Odd levels split those splits in half with a horizontal line creating squares again
 func New2D(levels int) *simple.Tree {
-	ratios := htree.NewRatios([]float64{0.5, 1.0})
-	builder := builder.New2D(ratios, 1)
+	ratioSource := htree.NewBasicRatioSource([]float64{0.5, 1.0})
+	builder := builder.New2D(ratioSource, 1)
 
 	for i := 0; i < levels; i++ {
 		leaves := builder.Leaves()
@@ -30,8 +30,8 @@ func New2D(levels int) *simple.Tree {
 }
 
 func New3D(levels int) *simple.Tree {
-	ratios := htree.NewRatios([]float64{0.5, 1.0, 2.0})
-	builder := builder.New3D(ratios, 1, 1)
+	ratioSource := htree.NewBasicRatioSource([]float64{0.5, 1.0, 2.0})
+	builder := builder.New3D(ratioSource, 1, 1)
 
 	for i := 0; i < levels; i++ {
 		leaves := builder.Leaves()

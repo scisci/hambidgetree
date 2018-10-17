@@ -14,15 +14,24 @@ import (
 )
 
 func TestSerialize(t *testing.T) {
-	goldenRatios := golden.Ratios()
+	goldenRatios := golden.RatioSource()
 
 	g2 := grid.New2D(2)
 	g3 := grid.New3D(3)
-	rb2, err := randombasic.New(goldenRatios, 1, 20, time.Now().UnixNano()).Generate()
+	gen2, err := randombasic.New(goldenRatios, 1, 20, time.Now().UnixNano())
+	if err != nil {
+		t.Errorf("failed to create generator %v", err)
+	}
+	rb2, err := gen2.Generate()
 	if err != nil {
 		t.Errorf("failed to create random basic %v", err)
 	}
-	rb3, err := randombasic.New3D(goldenRatios, 1, 1, 20, time.Now().UnixNano()).Generate()
+
+	gen3, err := randombasic.New3D(goldenRatios, 1, 1, 20, time.Now().UnixNano())
+	if err != nil {
+		t.Errorf("failed to create generator %v", err)
+	}
+	rb3, err := gen3.Generate()
 	if err != nil {
 		t.Errorf("failed to create random basic %v", err)
 	}

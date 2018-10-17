@@ -201,6 +201,10 @@ var Exprs = []string{
 	"8",
 }
 
-func Ratios() htree.Ratios {
-	return htree.NewExprRatios(Exprs)
+func RatioSource() htree.RatioSource {
+	ratioSource, err := htree.NewExprRatioSource(Exprs)
+	if err != nil {
+		panic(err)
+	}
+	return ratioSource
 }

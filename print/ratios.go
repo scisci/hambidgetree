@@ -6,9 +6,10 @@ import (
 	htree "github.com/scisci/hambidgetree"
 )
 
-func PrintRatios(ratios htree.Ratios) string {
+func PrintRatios(ratioSource htree.RatioSource) string {
 	r := regexp.MustCompile(`SQRT\(([^\)]+)\)`)
-	n := ratios.Len()
+	exprs := ratioSource.Exprs()
+	n := len(exprs)
 
 	buf := bytes.NewBuffer(nil)
 	buf.WriteString("[")
@@ -16,7 +17,7 @@ func PrintRatios(ratios htree.Ratios) string {
 		if i > 0 {
 			buf.WriteString(", ")
 		}
-		expr := r.ReplaceAllString(ratios.Expr(i), "√$1")
+		expr := r.ReplaceAllString(exprs[i], "√$1")
 
 		// Replace SQRT(x) with symbol
 

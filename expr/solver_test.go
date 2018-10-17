@@ -19,7 +19,10 @@ var tests = []struct {
 
 func TestSolver(t *testing.T) {
 	for i, test := range tests {
-		res := Solve(test.Expr)
+		res, err := Solve(test.Expr)
+		if err != nil {
+			t.Errorf("Failed to parse %v", err)
+		}
 		if res != test.Result {
 			t.Errorf("Test %d failed, expected %.20f, got %.20f", i, test.Result, res)
 		}

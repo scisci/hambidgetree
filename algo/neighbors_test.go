@@ -37,9 +37,12 @@ func TestNeighbors3D(t *testing.T) {
 }
 
 func TestNeighbors3DMeasured(t *testing.T) {
-	ratios := golden.Ratios()
+	ratioSource := golden.RatioSource()
 	numLeaves := 10
-	gen := randombasic.New3D(ratios, 1, 1, numLeaves, 543543)
+	gen, err := randombasic.New3D(ratioSource, 1, 1, numLeaves, 543543)
+	if err != nil {
+		t.Errorf("Error creating tree %v", err)
+	}
 	tree, err := gen.Generate()
 	if err != nil {
 		t.Errorf("Error generating tree %v", err)

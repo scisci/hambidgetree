@@ -5,7 +5,7 @@ import (
 	"sort"
 	"errors"
 	"strconv"
-	"github.com/scisci/hambidgetree/expr"
+	exprSolver "github.com/scisci/hambidgetree/expr"
 )
 
 var ErrMissingInverse = errors.New("Missing inverse")
@@ -25,6 +25,31 @@ type Ratios interface {
 
 type RatioSource interface {
 	RatioFloats() RatioFloats
+	Exprs() RatioExprs
+}
+
+func NewExprRatioSource(exprs []string) (RatioSource, error) {
+	var tmp exprValues
+	for _, expr := range exprs {
+		value, err := exprSolver.Solve(expr)
+		if err != nil {
+			return nil, err
+		}
+		tmp = append(tmp, exprValue{expr: expr, value: value})
+	}
+	sort.Sort(tmp)
+
+	sortedValues := make([]float64, len(tmp))
+	sortedExprs := make([]string, len(tmp))
+	for i, exprValue := range tmp {
+		sortedValues[i] = exprValue.value
+		sortedExprs[i] = exprValue.expr
+	}
+
+	return &basicRatioSource {
+		ratios: RatioFloats(sortedValues),
+		exprs: RatioExprs(sortedExprs),
+	}, nil
 }
 
 func NewBasicRatioSource(values []float64) RatioSource {
@@ -37,20 +62,34 @@ func NewBasicRatioSource(values []float64) RatioSource {
 		panic(err)
 	}
 
+	exprs := RatioExprs(make([]string, len(ratios)))
+	for i, value := range ratios {
+		exprs[i] = strconv.FormatFloat(value, 'f', -1, 64)
+	}
+
 	return &basicRatioSource {
 		ratios: ratios,
+		exprs: exprs,
 	}
 }
 
 type basicRatioSource struct {
 	ratios RatioFloats
+	exprs []string
 }
 
 func (basicRatioSource *basicRatioSource) RatioFloats() RatioFloats {
 	return basicRatioSource.ratios
 }
 
+func (basicRatioSource *basicRatioSource) Exprs() RatioExprs {
+	return basicRatioSource.exprs
+}
+
+
+
 type RatioFloats []float64
+type RatioExprs []string
 
 func NewRatioFloats(values []float64) (RatioFloats, error) {
 	n := len(values)
@@ -70,61 +109,32 @@ func NewRatioFloats(values []float64) (RatioFloats, error) {
 
 
 
-type floatRatios []float64
 
-func (ratios floatRatios) Len() int {
-	return len(ratios)
-}
-
-func (ratios floatRatios) At(index int) float64 {
-	return ratios[index]
-}
-
-func (ratios floatRatios) Expr(index int) string {
-	return strconv.FormatFloat(ratios[index], 'f', -1, 64)
-}
-
-type exprRatios []string
-
-func (ratios exprRatios) Len() int {
-	return len(ratios)
-}
-
-func (ratios exprRatios) At(index int) float64 {
-	return expr.Solve(ratios[index])
-}
-
-func (ratios exprRatios) Expr(index int) string {
-	return ratios[index]
-}
-
-type cachedExpr struct {
+type exprValue struct {
 	value      float64
-	expression string
+	expr string
 }
 
-type cachedExprRatios []cachedExpr
+type exprValues []exprValue
 
-func (a cachedExprRatios) Len() int           { return len(a) }
-func (a cachedExprRatios) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a cachedExprRatios) Less(i, j int) bool { return a[i].value < a[j].value }
+func (a exprValues) Len() int           { return len(a) }
+func (a exprValues) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a exprValues) Less(i, j int) bool { return a[i].value < a[j].value }
 
-func (ratios cachedExprRatios) At(index int) float64 {
-	return ratios[index].value
-}
-
-func (ratios cachedExprRatios) Expr(index int) string {
-	return ratios[index].expression
-}
 
 type ratioSourceSubset struct {
 	ratioSource  RatioSource
 	ratios RatioFloats
+	exprs RatioExprs
 	indexes []int
 }
 
 func (ratioSourceSubset *ratioSourceSubset) RatioFloats() RatioFloats {
 	return ratioSourceSubset.ratios
+}
+
+func (ratioSourceSubset *ratioSourceSubset) Exprs() RatioExprs {
+	return ratioSourceSubset.exprs
 }
 
 
@@ -174,33 +184,15 @@ func FindIndexesWithMissingInverses(ratios RatioFloats, epsilon float64) []int {
 }
 
 
-
-func NewRatios(values RatioFloats) Ratios {
-	ratios := make([]float64, len(values))
-	copy(ratios, values)
-	sort.Float64s(ratios)
-	return floatRatios(ratios)
-}
-
-
-func NewExprRatios(values []string) Ratios {
-	exprs := make([]cachedExpr, len(values))
-	for i, expression := range values {
-		value := expr.Solve(expression)
-		exprs[i] = cachedExpr{value: value, expression: expression}
-	}
-
-	res := cachedExprRatios(exprs)
-	sort.Sort(res)
-	return res
-}
-
 func NewRatioSourceSubset(ratioSource RatioSource, values []float64, epsilon float64) (RatioSource, error) {
 	tmp := make([]float64, len(values))
 	copy(tmp, values)
 	sort.Float64s(tmp)
 
 	allRatios := ratioSource.RatioFloats()
+	allExprs := ratioSource.Exprs()
+	
+	subExprs := RatioExprs(make([]string, len(tmp)))
 	subRatios, err := NewRatioFloats(tmp)
 	if err !=nil {
 		panic(err)
@@ -213,6 +205,7 @@ func NewRatioSourceSubset(ratioSource RatioSource, values []float64, epsilon flo
 			if math.Abs(allRatios[j]-value) < epsilon {
 				found = true
 				indexes = append(indexes, j)
+				subExprs[i] = allExprs[j]
 				break
 			}
 		}
@@ -221,13 +214,12 @@ func NewRatioSourceSubset(ratioSource RatioSource, values []float64, epsilon flo
 		}
 	}
 
-
-
 	return &ratioSourceSubset{
 		ratioSource: ratioSource,
 		ratios:  subRatios,
+		exprs: subExprs,
 		indexes: indexes,
-	},nil
+	}, nil
 }
 
 

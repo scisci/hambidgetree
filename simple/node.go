@@ -74,11 +74,11 @@ type Tree struct {
 	parents      ParentLookup
 	ratioIndexXY int
 	ratioIndexZY int
-	ratios       htree.Ratios
+	ratioSource      htree.RatioSource
 	root         *Node
 }
 
-func NewTree(ratios htree.Ratios, ratioIndexXY, ratioIndexZY int, root *Node, nodes NodeLookup, parents ParentLookup) *Tree {
+func NewTree(ratioSource htree.RatioSource, ratioIndexXY, ratioIndexZY int, root *Node, nodes NodeLookup, parents ParentLookup) *Tree {
 	if root == nil {
 		panic("Can't create tree with nil root")
 	}
@@ -88,7 +88,7 @@ func NewTree(ratios htree.Ratios, ratioIndexXY, ratioIndexZY int, root *Node, no
 		parents:      parents,
 		ratioIndexXY: ratioIndexXY,
 		ratioIndexZY: ratioIndexZY,
-		ratios:       ratios,
+		ratioSource:       ratioSource,
 		root:         root,
 	}
 }
@@ -105,8 +105,8 @@ func (tree *Tree) Node(id htree.NodeID) htree.ImmutableNode {
 	return tree.nodes[id]
 }
 
-func (tree *Tree) Ratios() htree.Ratios {
-	return tree.ratios
+func (tree *Tree) RatioSource() htree.RatioSource {
+	return tree.ratioSource
 }
 
 func (tree *Tree) Root() htree.ImmutableNode {

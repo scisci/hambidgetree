@@ -88,13 +88,13 @@ func SplitRegionHorizontal(ratios RatioFloats, region Region, leftIndex, rightIn
 	return
 }
 
-func SplitRegionVertical(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionVertical(ratios RatioFloats, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
 
-	leftRatio := ratios.At(leftIndex)
-	leftWidthParam := RatioNormalWidth(ratios.At(ratioIndexXY), leftRatio) // left.Ratio() / ratio
+	leftRatio := ratios[leftIndex]
+	leftWidthParam := RatioNormalWidth(ratios[ratioIndexXY], leftRatio) // left.Ratio() / ratio
 
 	right = &SimpleRatioRegion{
 		dimension:    dimension.Inset(AxisX, dimension.Width()*leftWidthParam),
@@ -111,13 +111,13 @@ func SplitRegionVertical(ratios Ratios, region Region, leftIndex, rightIndex int
 	return
 }
 
-func SplitRegionDepth(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionDepth(ratios RatioFloats, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
 	//fmt.Println("splitting depth")
-	leftRatio := ratios.At(leftIndex)
-	leftDepthParam := RatioNormalWidth(ratios.At(ratioIndexZY), leftRatio)
+	leftRatio := ratios[leftIndex]
+	leftDepthParam := RatioNormalWidth(ratios[ratioIndexZY], leftRatio)
 	//fmt.Printf("depth: %f, container: %f, ratio: %f\n", dimension.Depth(), node.RatioZY, leftRatio)
 
 	right = &SimpleRatioRegion{
@@ -151,16 +151,16 @@ func (region *nodeRatioRegion) Node() ImmutableNode {
 }
 
 func NewRegionIterator(tree ImmutableTree, offset *Vector, scale float64) *RegionIterator {
-	ratios := tree.Ratios()
+	ratios := tree.RatioSource().RatioFloats()
 
 	ratioIndexXY := tree.RatioIndexXY()
 	ratioIndexZY := tree.RatioIndexZY()
 
-	ratioXY := ratios.At(ratioIndexXY)
+	ratioXY := ratios[ratioIndexXY]
 	ratioZY := 0.0
 
 	if IsRatioIndexDefined(ratioIndexZY) {
-		ratioZY = ratios.At(ratioIndexZY)
+		ratioZY = ratios[ratioIndexZY]
 	}
 
 	max := NewVector(ratioXY*scale, 1*scale, ratioZY*scale)
@@ -195,6 +195,7 @@ func (it *RegionIterator) Next() NodeRegion {
 	it.regions = it.regions[:len(it.regions)-1]
 
 	branch := node.Branch()
+	ratios := it.tree.RatioSource().RatioFloats()
 
 	if branch != nil {
 		left := branch.Left()
@@ -203,18 +204,18 @@ func (it *RegionIterator) Next() NodeRegion {
 
 		var leftRegion, rightRegion *SimpleRatioRegion
 		if splitType == SplitTypeHorizontal {
-			leftRegion, rightRegion = SplitRegionHorizontal(it.tree.Ratios(),
+			leftRegion, rightRegion = SplitRegionHorizontal(ratios,
 				node.SimpleRatioRegion,
 				branch.LeftIndex(),
 				branch.RightIndex())
 		} else if splitType == SplitTypeVertical {
 			// When we split vertically
-			leftRegion, rightRegion = SplitRegionVertical(it.tree.Ratios(),
+			leftRegion, rightRegion = SplitRegionVertical(ratios,
 				node.SimpleRatioRegion,
 				branch.LeftIndex(),
 				branch.RightIndex())
 		} else if splitType == SplitTypeDepth {
-			leftRegion, rightRegion = SplitRegionDepth(it.tree.Ratios(),
+			leftRegion, rightRegion = SplitRegionDepth(ratios,
 				node.SimpleRatioRegion,
 				branch.LeftIndex(),
 				branch.RightIndex())

@@ -3,7 +3,7 @@ package hambidgetree
 type NodeID int64
 
 type ImmutableTree interface {
-	Ratios() Ratios
+	RatioSource() RatioSource
 	Node(id NodeID) ImmutableNode
 	Parent(id NodeID) ImmutableNode
 	Root() ImmutableNode

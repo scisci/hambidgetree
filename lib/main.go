@@ -52,8 +52,12 @@ var treeReg = make(map[int]htree.ImmutableTree)
 
 //export CreateRandomBasicTree
 func CreateRandomBasicTree(containerRatio float64, numRects int, seed int64) int {
-	ratios := golden.Ratios()
-	gen := randombasic.New(ratios, containerRatio, numRects, seed)
+	ratioSource := golden.RatioSource()
+	gen, err := randombasic.New(ratioSource, containerRatio, numRects, seed)
+	if err != nil {
+		fmt.Printf("Failed to create generator (%v)\n", err)
+		return -1
+	}
 	tree, err := gen.Generate()
 	if err != nil {
 		fmt.Printf("Failed to generate tree (%v)\n", err)

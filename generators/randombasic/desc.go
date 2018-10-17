@@ -23,7 +23,7 @@ func (gen *RandomBasicTreeGenerator) Parameters(f generators.ParameterFormatType
 	}
 
 	return map[string]interface{}{
-		"Ratios":               print.PrintRatios(gen.Ratios.Ratios()),
+		"Ratios":               print.PrintRatios(gen.RatioSource),
 		"Container Ratio (XY)": strconv.FormatFloat(gen.XYRatio, 'f', 4, 64),
 		"Container Ratio (ZY)": strconv.FormatFloat(gen.ZYRatio, 'f', 4, 64),
 		"Number of Leaves":     gen.NumLeaves,
