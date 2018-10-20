@@ -7,8 +7,7 @@ type Axis int
 
 const AxisX = 1
 const AxisY = 2
-const AxisZ = 4
-
+const AxisZ = 3
 
 type Dimension struct {
 	x Extent

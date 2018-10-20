@@ -7,7 +7,10 @@ import (
 )
 
 func TestGolden(t *testing.T) {
-	r1 := htree.NewBasicRatioSource(golden.Floats)
+	r1, err := htree.NewBasicRatioSource(golden.Floats)
+	if err != nil {
+		t.Errorf("Error creating ratio source %v", err)
+	}
 	r2, err := htree.NewExprRatioSource(golden.Exprs)
 	if err != nil {
 		t.Errorf("Golden ratio expr error %v", err)

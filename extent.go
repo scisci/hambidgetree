@@ -1,23 +1,22 @@
 package hambidgetree
 
 import (
-	"fmt"
-	"math"
 	"errors"
+	"math"
 )
 
 var ErrInvalidExtent = errors.New("Invalid extent")
 
 // Extent
 //
-// Represents a range along a dimension. Start is included and end is not 
+// Represents a range along a dimension. Start is included and end is not
 // included.
 type Extent struct {
 	start, end float64
 }
 
 func NewExtent(start, end float64) Extent {
-	if (end < start) {
+	if end < start {
 		panic(ErrInvalidExtent)
 	}
 
@@ -27,8 +26,12 @@ func NewExtent(start, end float64) Extent {
 	}
 }
 
-func (extent Extent) String() string {
-	return fmt.Sprintf("Extent{%.2f, %.2f}", extent.start, extent.end)
+func (extent Extent) Start() float64 {
+	return extent.start
+}
+
+func (extent Extent) End() float64 {
+	return extent.end
 }
 
 func (extent Extent) Equal(other Extent) bool {
@@ -40,7 +43,7 @@ func (extent Extent) Empty() bool {
 }
 
 func (extent Extent) NearlyEmpty(epsilon float64) bool {
-	return extent.end - extent.start < epsilon
+	return extent.end-extent.start < epsilon
 }
 
 func (extent Extent) Size() float64 {

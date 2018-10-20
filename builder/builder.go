@@ -24,34 +24,29 @@ type dBranch struct {
 }
 
 type dNode struct {
-	id           htree.NodeID
-	dimension    *htree.Dimension
-	ratioIndexXY int
-	ratioIndexZY int
+	id     htree.NodeID
+	region *htree.Region
 }
 
 func (node *dNode) ID() htree.NodeID {
 	return node.id
 }
 
-func (node *dNode) Dimension() *htree.Dimension {
-	return node.dimension
-}
-
+// For Leaf
 func (node *dNode) RatioIndexXY() int {
-	return node.ratioIndexXY
+	return node.region.RatioIndexXY()
 }
 
+// For Leaf
 func (node *dNode) RatioIndexZY() int {
-	return node.ratioIndexZY
+	return node.region.RatioIndexZY()
 }
 
 type TreeBuilder struct {
-	idgen   *uniqueIDGen
-	offset  *htree.Vector
-	scale   float64
-	regions map[htree.NodeID]*dNode
-	//parents    map[htree.NodeID]htree.NodeID
+	idgen       *uniqueIDGen
+	offset      *htree.Vector
+	scale       float64
+	regions     map[htree.NodeID]*dNode
 	ratioSource htree.RatioSource
 	root        *dNode
 	branches    []*dBranch
@@ -85,11 +80,12 @@ func New(ratioSource htree.RatioSource, ratioIndexXY int, ratioIndexZY int) *Tre
 
 	root := &dNode{
 		id: idgen.Next(),
-		dimension: htree.NewDimension3DV(
+		region: htree.NewRegion(htree.NewDimension3DV(
 			offset,
 			offset.Add(max)),
-		ratioIndexXY: ratioIndexXY,
-		ratioIndexZY: ratioIndexZY,
+			ratioIndexXY,
+			ratioIndexZY,
+		),
 	}
 
 	regions[root.id] = root
@@ -129,36 +125,30 @@ func (b *TreeBuilder) Branch(leafID htree.NodeID, splitType htree.SplitType, lef
 
 	ratios := b.ratioSource.Ratios()
 
-	var leftRegion, rightRegion htree.Region
+	var leftRegion, rightRegion *htree.Region
 	leaf := b.leaves[index]
 	switch splitType {
 	case htree.SplitTypeHorizontal:
-		leftRegion, rightRegion = htree.SplitRegionHorizontal(ratios, leaf, leftIndex, rightIndex)
+		leftRegion, rightRegion = htree.SplitRegionHorizontal(ratios, leaf.region, leftIndex, rightIndex)
 	case htree.SplitTypeVertical:
-		leftRegion, rightRegion = htree.SplitRegionVertical(ratios, leaf, leftIndex, rightIndex)
+		leftRegion, rightRegion = htree.SplitRegionVertical(ratios, leaf.region, leftIndex, rightIndex)
 	case htree.SplitTypeDepth:
-		leftRegion, rightRegion = htree.SplitRegionDepth(ratios, leaf, leftIndex, rightIndex)
+		leftRegion, rightRegion = htree.SplitRegionDepth(ratios, leaf.region, leftIndex, rightIndex)
 	default:
 		panic("Unknown split type")
 	}
 
 	// Create a new node by
 	leftNode := &dNode{
-		id:           b.idgen.Next(),
-		dimension:    leftRegion.Dimension(),
-		ratioIndexXY: leftRegion.RatioIndexXY(),
-		ratioIndexZY: leftRegion.RatioIndexZY(),
+		id:     b.idgen.Next(),
+		region: leftRegion,
 	}
 
 	rightNode := &dNode{
-		id:           b.idgen.Next(),
-		dimension:    rightRegion.Dimension(),
-		ratioIndexXY: rightRegion.RatioIndexXY(),
-		ratioIndexZY: rightRegion.RatioIndexZY(),
+		id:     b.idgen.Next(),
+		region: rightRegion,
 	}
 
-	//b.parents[leftNode.id] = leafID
-	//b.parents[rightNode.id] = leafID
 	b.regions[leftNode.id] = leftNode
 	b.regions[rightNode.id] = rightNode
 	b.branches = append(b.branches, &dBranch{id: leafID, left: leftNode, right: rightNode, leftIndex: leftIndex, rightIndex: rightIndex, splitType: splitType})
@@ -197,13 +187,13 @@ func (b *TreeBuilder) Build() (*simple.Tree, htree.RegionMap) {
 		)
 	}
 
-	var regionMap = make(map[htree.NodeID]htree.Region)
+	var regionMap = make(map[htree.NodeID]*htree.Region)
 	for k, v := range b.regions {
-		regionMap[k] = v
+		regionMap[k] = v.region
 	}
 
 	rootBranch := simpleBranches[b.root.id]
 	root := simple.NewNode(b.root.id, rootBranch)
 	simpleNodes[root.ID()] = root
-	return simple.NewTree(b.ratioSource, b.root.ratioIndexXY, b.root.ratioIndexZY, root, simpleNodes, simpleParents), regionMap
+	return simple.NewTree(b.ratioSource, b.root.RatioIndexXY(), b.root.RatioIndexZY(), root, simpleNodes, simpleParents), regionMap
 }

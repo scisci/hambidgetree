@@ -88,7 +88,7 @@ func CreateLeafRegions(id int) (data_ptr unsafe.Pointer, count C.int) {
 	count = C.int(len(leaves))
 	data_ptr = C.malloc(C.size_t(C.sizeof_struct_htree_region * count))
 	for i, region := range leaves {
-		dim := region.Dimension()
+		dim := region.Region().Dimension()
 		c_node_region := C.struct_htree_region{}
 		c_node_region.id = C.longlong(region.Node().ID())
 		c_node_region.min = C.struct_htree_vec{C.double(dim.Left()), C.double(dim.Top()), C.double(dim.Front())}

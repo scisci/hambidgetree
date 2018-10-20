@@ -11,10 +11,21 @@ var ErrRatioNotFound = errors.New("Ratio not found")
 
 const RatioIndexUndefined = -1
 
+// Ratios are guaranteed to be sorted ascending and contain no duplicates
 type Ratios []float64
+
+// Exprs guaranteed to be sorted ascending and contain no duplicates
 type Exprs []string
+
+// A list of possible splits mapped by index to a ratios array
 type Complements [][]Split
 
+func IsRatioIndexDefined(index int) bool {
+	return index > RatioIndexUndefined
+}
+
+// Creates ratios from list of values, enforces that values are sorted
+// ascending and no duplicates, otherwise an error is thrown.
 func NewRatios(values []float64) (Ratios, error) {
 	n := len(values)
 
@@ -29,35 +40,6 @@ func NewRatios(values []float64) (Ratios, error) {
 	}
 
 	return Ratios(values), nil
-}
-
-// A pairing of an expression and value useful for creating a ratio source from
-// expressions.
-type exprValue struct {
-	value float64
-	expr  string
-}
-
-type exprValues []exprValue
-
-func (a exprValues) Len() int           { return len(a) }
-func (a exprValues) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a exprValues) Less(i, j int) bool { return a[i].value < a[j].value }
-
-// Concrete struct for implementing the RatioSourceSubSet interface
-type ratioSourceSubset struct {
-	ratioSource RatioSource
-	ratios      Ratios
-	exprs       Exprs
-	indexes     []int
-}
-
-func (ratioSourceSubset *ratioSourceSubset) Ratios() Ratios {
-	return ratioSourceSubset.ratios
-}
-
-func (ratioSourceSubset *ratioSourceSubset) Exprs() Exprs {
-	return ratioSourceSubset.exprs
 }
 
 // Returns the parameterized height of a ratio if it is contained within another
@@ -109,7 +91,7 @@ func FindIndexesWithMissingInverses(ratios Ratios, epsilon float64) []int {
 // errors, if there are two that are the same distance, the smaller index wins.
 func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
 	closestDist := math.MaxFloat64
-	closestIndex := -1
+	closestIndex := RatioIndexUndefined
 
 	//loops := 0
 
@@ -145,12 +127,12 @@ func FindClosestIndex(ratios Ratios, ratio, epsilon float64) int {
 func FindClosestIndexWithinRange(ratios Ratios, ratio, epsilon float64) int {
 	index := FindClosestIndex(ratios, ratio, epsilon)
 	if index < 0 {
-		return -1
+		return RatioIndexUndefined
 	}
 
 	dist := ratio - ratios[index]
 	if dist < -epsilon || dist > epsilon {
-		return -1
+		return RatioIndexUndefined
 	}
 
 	return index
@@ -169,5 +151,5 @@ func FindInverseRatioIndex(ratios Ratios, index int, epsilon float64) int {
 		}
 	}
 
-	return -1
+	return RatioIndexUndefined
 }

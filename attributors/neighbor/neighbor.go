@@ -2,6 +2,7 @@ package neighbor
 
 import (
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
 	"github.com/scisci/hambidgetree/attributors"
 	"math/rand"
 )
@@ -28,7 +29,7 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree htree.Tree, attrs *a
 	epsilon := 0.0000001
 
 	// Get a list of all the nodes
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 
 	// Get the dimension list
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)

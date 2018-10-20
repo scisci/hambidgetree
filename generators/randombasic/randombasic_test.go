@@ -3,12 +3,16 @@ package randombasic
 import (
 	"fmt"
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
 	"github.com/scisci/hambidgetree/golden"
 	"testing"
 )
 
 func TestGenerator2D(t *testing.T) {
-	ratioSource := htree.NewBasicRatioSource([]float64{0.5, 1.0, 2.0})
+	ratioSource, err := htree.NewBasicRatioSource([]float64{0.5, 1.0, 2.0})
+	if err != nil {
+		t.Errorf("Error creating ratio source %v", err)
+	}
 	numLeaves := 3
 	gen, err := New(ratioSource, 1, numLeaves, 1)
 	if err != nil {
@@ -19,13 +23,13 @@ func TestGenerator2D(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	if len(leaves) != numLeaves {
 		t.Errorf("Got %d leaves, expected %d", len(leaves), numLeaves)
 	}
 
 	fmt.Println("Test2D")
-	it := htree.NewNodeIterator(tree.Root())
+	it := algo.NewNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
 		fmt.Printf("Node{%d, %v}\n", node.ID(), node.Branch())
@@ -34,7 +38,7 @@ func TestGenerator2D(t *testing.T) {
 	rit := htree.NewRegionIterator(tree, htree.Origin, htree.UnityScale)
 	for rit.HasNext() {
 		rn := rit.Next()
-		fmt.Printf("Node %d: %v\n", rn.Node().ID(), rn.Dimension())
+		fmt.Printf("Node %d: %v\n", rn.Node().ID(), rn.Region().Dimension())
 	}
 
 	/*
@@ -58,7 +62,7 @@ func TestGenerator3D(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	if len(leaves) != numLeaves {
 		t.Errorf("Got %d leaves, expected %d", len(leaves), numLeaves)
 	}
@@ -79,7 +83,7 @@ func TestGenerator3D(t *testing.T) {
 			continue
 		}
 
-		dimension := rn.Dimension()
+		dimension := rn.Region().Dimension()
 		xy := dimension.Width() / dimension.Height()
 		zx := dimension.Depth() / dimension.Width()
 		zy := dimension.Depth() / dimension.Height()

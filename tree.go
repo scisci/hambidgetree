@@ -9,7 +9,7 @@ package hambidgetree
 // node: [id: id, split: hvd, index, left: id, right: id]
 
 type NodeID int64
-type RegionMap map[NodeID]Region
+type RegionMap map[NodeID]*Region
 
 type Tree interface {
 	RatioSource() RatioSource

@@ -2,6 +2,7 @@ package neighbor
 
 import (
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
 	"github.com/scisci/hambidgetree/generators/grid"
 	"sort"
 	"testing"
@@ -32,7 +33,7 @@ func arrayContentsEqual(arr1, arr2 []htree.Node) bool {
 
 func TestGetNeighbors(t *testing.T) {
 	tree := grid.New2D(2) // Create a tree with 4 squares
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	epsilon := 0.0000001

@@ -9,41 +9,39 @@ var ErrNotFound = errors.New("Not Found")
 
 const UnityScale = 1.0
 
-type Region interface {
-	Dimension() *Dimension
-	RatioIndexXY() int
-	RatioIndexZY() int
-}
-
-type NodeRegion interface {
-	Region
-	Node() Node
-}
-
-type SimpleRatioRegion struct {
+type Region struct {
 	dimension    *Dimension
 	ratioIndexXY int
 	ratioIndexZY int
 }
 
-func (region *SimpleRatioRegion) Dimension() *Dimension {
+func NewRegion(dimension *Dimension, ratioIndexXY, ratioIndexZY int) *Region {
+	return &Region{
+		dimension:    dimension,
+		ratioIndexXY: ratioIndexXY,
+		ratioIndexZY: ratioIndexZY,
+	}
+}
+
+func (region *Region) Dimension() *Dimension {
 	return region.dimension
 }
 
-func (region *SimpleRatioRegion) RatioIndexXY() int {
+func (region *Region) RatioIndexXY() int {
 	return region.ratioIndexXY
 }
 
-func (region *SimpleRatioRegion) RatioIndexZY() int {
+func (region *Region) RatioIndexZY() int {
 	return region.ratioIndexZY
 }
 
-func IsRatioIndexDefined(index int) bool {
-	return index > RatioIndexUndefined
+type NodeRegion interface {
+	Region() *Region
+	Node() Node
 }
 
 // Split the given region using the given ratioIndex
-func SplitRegionHorizontal(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionHorizontal(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
 	epsilon := 0.0000001
 
 	dimension := region.Dimension()
@@ -71,22 +69,22 @@ func SplitRegionHorizontal(ratios Ratios, region Region, leftIndex, rightIndex i
 
 	// Find the right ratio index
 
-	right = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisY, dimension.Height()*leftHeightParam),
-		ratioIndexXY: rightIndex,
-		ratioIndexZY: rightRatioIndexZY,
-	}
+	right = NewRegion(
+		dimension.Inset(AxisY, dimension.Height()*leftHeightParam),
+		rightIndex,
+		rightRatioIndexZY,
+	)
 
-	left = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisY, -dimension.Height()*(1-leftHeightParam)),
-		ratioIndexXY: leftIndex,
-		ratioIndexZY: leftRatioIndexZY,
-	}
+	left = NewRegion(
+		dimension.Inset(AxisY, -dimension.Height()*(1-leftHeightParam)),
+		leftIndex,
+		leftRatioIndexZY,
+	)
 
 	return
 }
 
-func SplitRegionVertical(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionVertical(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
@@ -94,22 +92,22 @@ func SplitRegionVertical(ratios Ratios, region Region, leftIndex, rightIndex int
 	leftRatio := ratios[leftIndex]
 	leftWidthParam := RatioNormalWidth(ratios[ratioIndexXY], leftRatio) // left.Ratio() / ratio
 
-	right = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisX, dimension.Width()*leftWidthParam),
-		ratioIndexXY: rightIndex,
-		ratioIndexZY: ratioIndexZY,
-	}
+	right = NewRegion(
+		dimension.Inset(AxisX, dimension.Width()*leftWidthParam),
+		rightIndex,
+		ratioIndexZY,
+	)
 
-	left = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisX, -dimension.Width()*(1-leftWidthParam)),
-		ratioIndexXY: leftIndex,
-		ratioIndexZY: ratioIndexZY,
-	}
+	left = NewRegion(
+		dimension.Inset(AxisX, -dimension.Width()*(1-leftWidthParam)),
+		leftIndex,
+		ratioIndexZY,
+	)
 
 	return
 }
 
-func SplitRegionDepth(ratios Ratios, region Region, leftIndex, rightIndex int) (left, right *SimpleRatioRegion) {
+func SplitRegionDepth(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
 	dimension := region.Dimension()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
@@ -118,17 +116,17 @@ func SplitRegionDepth(ratios Ratios, region Region, leftIndex, rightIndex int) (
 	leftDepthParam := RatioNormalWidth(ratios[ratioIndexZY], leftRatio)
 	//fmt.Printf("depth: %f, container: %f, ratio: %f\n", dimension.Depth(), node.RatioZY, leftRatio)
 
-	right = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisZ, dimension.Depth()*leftDepthParam),
-		ratioIndexXY: ratioIndexXY,
-		ratioIndexZY: rightIndex,
-	}
+	right = NewRegion(
+		dimension.Inset(AxisZ, dimension.Depth()*leftDepthParam),
+		ratioIndexXY,
+		rightIndex,
+	)
 
-	left = &SimpleRatioRegion{
-		dimension:    dimension.Inset(AxisZ, -dimension.Depth()*(1-leftDepthParam)),
-		ratioIndexXY: ratioIndexXY,
-		ratioIndexZY: leftIndex,
-	}
+	left = NewRegion(
+		dimension.Inset(AxisZ, -dimension.Depth()*(1-leftDepthParam)),
+		ratioIndexXY,
+		leftIndex,
+	)
 
 	return
 }
@@ -139,12 +137,16 @@ type RegionIterator struct {
 }
 
 type nodeRatioRegion struct {
-	node Node
-	*SimpleRatioRegion
+	node   Node
+	region *Region
 }
 
 func (region *nodeRatioRegion) Node() Node {
 	return region.node
+}
+
+func (region *nodeRatioRegion) Region() *Region {
+	return region.region
 }
 
 func NewRegionIterator(tree Tree, offset *Vector, scale float64) *RegionIterator {
@@ -166,11 +168,11 @@ func NewRegionIterator(tree Tree, offset *Vector, scale float64) *RegionIterator
 
 	region := &nodeRatioRegion{
 		root,
-		&SimpleRatioRegion{
-			dimension:    NewDimension3DV(offset, offset.Add(max)),
-			ratioIndexXY: ratioIndexXY,
-			ratioIndexZY: ratioIndexZY,
-		},
+		NewRegion(
+			NewDimension3DV(offset, offset.Add(max)),
+			ratioIndexXY,
+			ratioIndexZY,
+		),
 	}
 
 	return &RegionIterator{
@@ -199,21 +201,21 @@ func (it *RegionIterator) Next() NodeRegion {
 		right := branch.Right()
 		splitType := branch.SplitType()
 
-		var leftRegion, rightRegion *SimpleRatioRegion
+		var leftRegion, rightRegion *Region
 		if splitType == SplitTypeHorizontal {
 			leftRegion, rightRegion = SplitRegionHorizontal(ratios,
-				node.SimpleRatioRegion,
+				node.Region(),
 				branch.LeftIndex(),
 				branch.RightIndex())
 		} else if splitType == SplitTypeVertical {
 			// When we split vertically
 			leftRegion, rightRegion = SplitRegionVertical(ratios,
-				node.SimpleRatioRegion,
+				node.Region(),
 				branch.LeftIndex(),
 				branch.RightIndex())
 		} else if splitType == SplitTypeDepth {
 			leftRegion, rightRegion = SplitRegionDepth(ratios,
-				node.SimpleRatioRegion,
+				node.Region(),
 				branch.LeftIndex(),
 				branch.RightIndex())
 		} else {
@@ -228,11 +230,11 @@ func (it *RegionIterator) Next() NodeRegion {
 }
 
 func NewTreeRegionMap(tree Tree, offset *Vector, scale float64) RegionMap {
-	lookup := make(map[NodeID]Region)
+	lookup := make(map[NodeID]*Region)
 	it := NewRegionIterator(tree, offset, scale)
 	for it.HasNext() {
 		region := it.Next()
-		lookup[region.Node().ID()] = region
+		lookup[region.Node().ID()] = region.Region()
 	}
 	return lookup
 }

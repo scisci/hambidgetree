@@ -1,12 +1,16 @@
-package hambidgetree
+package algo
+
+import (
+	htree "github.com/scisci/hambidgetree"
+)
 
 type NodeIterator struct {
-	nodes []Node
+	nodes []htree.Node
 }
 
-func NewNodeIterator(root Node) *NodeIterator {
+func NewNodeIterator(root htree.Node) *NodeIterator {
 	return &NodeIterator{
-		nodes: []Node{root},
+		nodes: []htree.Node{root},
 	}
 }
 
@@ -14,7 +18,7 @@ func (it *NodeIterator) HasNext() bool {
 	return len(it.nodes) > 0
 }
 
-func (it *NodeIterator) Next() Node {
+func (it *NodeIterator) Next() htree.Node {
 	if !it.HasNext() {
 		return nil
 	}
@@ -28,16 +32,4 @@ func (it *NodeIterator) Next() Node {
 	}
 
 	return node
-}
-
-func FindLeaves(tree Tree) []Node {
-	var leaves []Node
-	it := NewNodeIterator(tree.Root())
-	for it.HasNext() {
-		node := it.Next()
-		if node.Branch() == nil {
-			leaves = append(leaves, node)
-		}
-	}
-	return leaves
 }

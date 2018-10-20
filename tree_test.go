@@ -2,13 +2,14 @@ package hambidgetree_test
 
 import (
 	htree "github.com/scisci/hambidgetree"
+	"github.com/scisci/hambidgetree/algo"
 	"github.com/scisci/hambidgetree/generators/grid"
 	"testing"
 )
 
 func TestTreeGrid2D(t *testing.T) {
 	tree := grid.New2D(4)
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	baseDim := regionMap[tree.Root().ID()].Dimension()
@@ -69,7 +70,7 @@ var grid3DTests = []struct {
 func TestTreeGrid3D(t *testing.T) {
 	for _, test := range grid3DTests {
 		tree := grid.New3D(test.levels)
-		leaves := htree.FindLeaves(tree)
+		leaves := algo.FindLeaves(tree)
 		regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 		baseDim := regionMap[tree.Root().ID()].Dimension()

@@ -24,6 +24,18 @@ type leafSplits struct {
 	splits []htree.Split
 }
 
+func IsSplitHorizontal(split htree.Split) bool {
+	return split.Type() == htree.SplitTypeHorizontal
+}
+
+func IsSplitVertical(split htree.Split) bool {
+	return split.Type() == htree.SplitTypeVertical
+}
+
+func IsSplitDepth(split htree.Split) bool {
+	return split.Type() == htree.SplitTypeDepth
+}
+
 func New(ratioSource htree.RatioSource, containerRatio float64, numLeaves int, seed int64) (*RandomBasicTreeGenerator, error) {
 	complements, err := htree.NewComplements(ratioSource.Ratios(), defaultEpsilon)
 	if err != nil {
@@ -106,7 +118,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.Leaf, complements
 	var splits []htree.Split
 
 	for _, xySplit := range xyComplements {
-		if xySplit.IsHorizontal() {
+		if IsSplitHorizontal(xySplit) {
 			cutHeight := htree.RatioNormalHeight(xyRatio, ratios[xySplit.LeftIndex()])
 			compHeight := htree.RatioNormalHeight(xyRatio, ratios[xySplit.RightIndex()])
 			zyRatioTop := zyRatio / cutHeight
@@ -122,7 +134,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.Leaf, complements
 				//fmt.Printf("tried to split h ratio %f, got %f and %f, but %f is not a valid ratio\n", xyRatio, zyRatioTop, zyRatioBottom, zyRatioBottom)
 				//panic("right invalid")
 			}
-		} else if xySplit.IsVertical() {
+		} else if IsSplitVertical(xySplit) {
 			cutWidth := htree.RatioNormalWidth(xyRatio, ratios[xySplit.LeftIndex()])
 			compWidth := htree.RatioNormalWidth(xyRatio, ratios[xySplit.RightIndex()])
 			zxRatioTop := zxRatio / cutWidth
@@ -146,7 +158,7 @@ func (gen *RandomBasicTreeGenerator) filterLeaves3D(leaf htree.Leaf, complements
 	}
 
 	for _, zySplit := range zyComplements {
-		if !zySplit.IsVertical() {
+		if !IsSplitVertical(zySplit) {
 			continue
 		}
 
@@ -267,7 +279,7 @@ func (gen *RandomBasicTreeGenerator) Generate() (htree.Tree, error) {
 		// Randomly invert the split (by default complements always have the smaller)
 		// ratio on the left, but we want it to be evenly distributed.
 		if rand.Int()&1 == 0 {
-			split = split.Inverse()
+			split = htree.NewInvertedSplit(split)
 		}
 
 		treeBuilder.Branch(filteredLeaf.leaf.ID(), split.Type(), split.LeftIndex(), split.RightIndex())

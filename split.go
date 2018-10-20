@@ -6,61 +6,31 @@ const SplitTypeHorizontal SplitType = 1 // Split along Y axis
 const SplitTypeVertical SplitType = 2   // Split along X axis
 const SplitTypeDepth SplitType = 3      // Split along Z axis
 
-type Split interface {
-	LeftIndex() int
-	RightIndex() int
-	IsHorizontal() bool
-	IsVertical() bool
-	IsDepth() bool
-	Type() SplitType
-	Inverse() Split
-}
-
-type split struct {
+type Split struct {
 	typ        SplitType
-	leftIndex  int // Indices start at 1, so 0 is invalid
-	rightIndex int // Indices start at 1, so 0 is invalid
+	leftIndex  int
+	rightIndex int
 }
 
-func (s *split) Type() SplitType {
+func (s Split) Type() SplitType {
 	return s.typ
 }
 
-func (s *split) Inverse() Split {
-	return &split{
-		typ:        s.typ,
-		leftIndex:  s.rightIndex,
-		rightIndex: s.leftIndex,
-	}
+func (s Split) LeftIndex() int {
+	return s.leftIndex
 }
 
-func (s *split) LeftIndex() int {
-	return s.leftIndex - 1
-}
-
-func (s *split) RightIndex() int {
-	return s.rightIndex - 1
-}
-
-func (s *split) IsHorizontal() bool {
-	return s.typ == SplitTypeHorizontal
-}
-
-func (s *split) IsVertical() bool {
-	return s.typ == SplitTypeVertical
-}
-
-func (s *split) IsDepth() bool {
-	return s.typ == SplitTypeDepth
+func (s Split) RightIndex() int {
+	return s.rightIndex
 }
 
 // Index arguments are 0 based, but internally we start at 1. This allows the
 // default value of the interface to be obviously invalid.
 func NewSplit(typ SplitType, leftIndex, rightIndex int) Split {
-	return &split{
+	return Split{
 		typ:        typ,
-		leftIndex:  leftIndex + 1,
-		rightIndex: rightIndex + 1,
+		leftIndex:  leftIndex,
+		rightIndex: rightIndex,
 	}
 }
 
@@ -74,4 +44,12 @@ func NewHorizontalSplit(leftIndex, rightIndex int) Split {
 
 func NewDepthSplit(leftIndex, rightIndex int) Split {
 	return NewSplit(SplitTypeDepth, leftIndex, rightIndex)
+}
+
+func NewInvertedSplit(s Split) Split {
+	return Split{
+		typ:        s.typ,
+		leftIndex:  s.rightIndex,
+		rightIndex: s.leftIndex,
+	}
 }

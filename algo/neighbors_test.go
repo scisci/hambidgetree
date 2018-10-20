@@ -11,7 +11,7 @@ import (
 
 func TestNeighbors2D(t *testing.T) {
 	tree := grid.New2D(2)
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	leaf := leaves[0]
@@ -24,7 +24,7 @@ func TestNeighbors2D(t *testing.T) {
 
 func TestNeighbors3D(t *testing.T) {
 	tree := grid.New3D(3)
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	leaf := leaves[0]
@@ -48,7 +48,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 		t.Errorf("Error generating tree %v", err)
 	}
 
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
 	//dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
@@ -87,7 +87,7 @@ func TestAdjacencyMatrix(t *testing.T) {
 	tree := grid.New2D(2)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 	matrix := algo.BuildAdjacencyMatrix(tree, regionMap)
-	leaves := htree.FindLeaves(tree)
+	leaves := algo.FindLeaves(tree)
 
 	if len(matrix) != len(leaves) {
 		t.Errorf("Should have %d items in matrix, got %d", len(leaves), len(matrix))

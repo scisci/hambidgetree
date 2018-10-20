@@ -43,17 +43,12 @@ var splitTests = []struct {
 func TestNewSplit(t *testing.T) {
 	for i, args := range splitTests {
 		split := args.split
-		if (args.typ == SplitTypeHorizontal && (!split.IsHorizontal() || split.IsVertical() || split.IsDepth())) ||
-			(args.typ == SplitTypeVertical && (!split.IsVertical() || split.IsHorizontal() || split.IsDepth())) ||
-			(args.typ == SplitTypeDepth && (!split.IsDepth() || split.IsHorizontal() || split.IsVertical())) {
-			t.Errorf("Split test %d failed, dimensionality is wrong")
-		}
 
-		if index := split.LeftIndex(); index != args.leftIndex {
+		if index := split.leftIndex; index != args.leftIndex {
 			t.Errorf("Split test %d failed, left index should be %d, got %d", i, args.leftIndex, index)
 		}
 
-		if index := split.RightIndex(); index != args.rightIndex {
+		if index := split.rightIndex; index != args.rightIndex {
 			t.Errorf("Split test %d failed, right index should be %d, got %d", i, args.rightIndex, index)
 		}
 	}

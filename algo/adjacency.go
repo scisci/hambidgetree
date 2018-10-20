@@ -5,7 +5,7 @@ import (
 )
 
 func BuildAdjacencyMatrix(tree htree.Tree, regionMap htree.RegionMap) map[htree.NodeID][]htree.Node {
-	leaves := htree.FindLeaves(tree)
+	leaves := FindLeaves(tree)
 	matrix := make(map[htree.NodeID][]htree.Node)
 
 	for _, leaf := range leaves {
