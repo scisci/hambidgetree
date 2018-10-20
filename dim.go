@@ -9,85 +9,85 @@ const AxisX = 1
 const AxisY = 2
 const AxisZ = 3
 
-type Dimension struct {
+type AlignedBox struct {
 	x Extent
 	y Extent
 	z Extent
 }
 
-func NewDimension2D(left, top, right, bottom float64) *Dimension {
-	return &Dimension{
+func NewAlignedBox2D(left, top, right, bottom float64) *AlignedBox {
+	return &AlignedBox{
 		x: NewExtent(left, right),
 		y: NewExtent(top, bottom),
 	}
 }
 
-func NewDimension3D(left, top, front, right, bottom, back float64) *Dimension {
-	return &Dimension{
+func NewAlignedBox3D(left, top, front, right, bottom, back float64) *AlignedBox {
+	return &AlignedBox{
 		x: NewExtent(left, right),
 		y: NewExtent(top, bottom),
 		z: NewExtent(front, back),
 	}
 }
 
-func NewDimension3DV(min, max *Vector) *Dimension {
-	return NewDimension3D(min.x, min.y, min.z, max.x, max.y, max.z)
+func NewAlignedBox3DV(min, max *Vector) *AlignedBox {
+	return NewAlignedBox3D(min.x, min.y, min.z, max.x, max.y, max.z)
 }
 
-func (dim *Dimension) Clone() *Dimension {
-	return NewDimension3D(
+func (dim *AlignedBox) Clone() *AlignedBox {
+	return NewAlignedBox3D(
 		dim.x.start, dim.y.start, dim.z.start,
 		dim.x.end, dim.y.end, dim.z.end)
 }
 
-func (dim *Dimension) Is3D() bool {
+func (dim *AlignedBox) Is3D() bool {
 	return !dim.z.Empty()
 }
 
-func (dim *Dimension) String() string {
+func (dim *AlignedBox) String() string {
 	return fmt.Sprintf("Dim{%.2f, %.2f, %.2f, %.2f}",
 		dim.Left(), dim.Top(), dim.Width(), dim.Height())
 }
 
-func (dim *Dimension) Left() float64 {
+func (dim *AlignedBox) Left() float64 {
 	return dim.x.start
 }
 
-func (dim *Dimension) Right() float64 {
+func (dim *AlignedBox) Right() float64 {
 	return dim.x.end
 }
 
-func (dim *Dimension) Top() float64 {
+func (dim *AlignedBox) Top() float64 {
 	return dim.y.start
 }
 
-func (dim *Dimension) Bottom() float64 {
+func (dim *AlignedBox) Bottom() float64 {
 	return dim.y.end
 }
 
-func (dim *Dimension) Front() float64 {
+func (dim *AlignedBox) Front() float64 {
 	return dim.z.start
 }
 
-func (dim *Dimension) Back() float64 {
+func (dim *AlignedBox) Back() float64 {
 	return dim.z.end
 }
 
-func (dim *Dimension) Width() float64 {
+func (dim *AlignedBox) Width() float64 {
 	return dim.x.Size()
 }
 
-func (dim *Dimension) Height() float64 {
+func (dim *AlignedBox) Height() float64 {
 	return dim.y.Size()
 }
 
-func (dim *Dimension) Depth() float64 {
+func (dim *AlignedBox) Depth() float64 {
 	return dim.z.Size()
 }
 
 // Insets the extent corresponding to the given axis. If its a positive value
 // the start of the axis is inset, if its a negative value the end is inset.
-func (dim *Dimension) Inset(axis Axis, distance float64) *Dimension {
+func (dim *AlignedBox) Inset(axis Axis, distance float64) *AlignedBox {
 	inset := dim.Clone()
 
 	var extent *Extent
@@ -109,7 +109,7 @@ func (dim *Dimension) Inset(axis Axis, distance float64) *Dimension {
 	return inset
 }
 
-func (dim *Dimension) DistanceSquared(other *Dimension) float64 {
+func (dim *AlignedBox) DistanceSquared(other *AlignedBox) float64 {
 	dx := dim.x.Distance(other.x)
 	dy := dim.y.Distance(other.y)
 	dz := dim.z.Distance(other.z)
@@ -119,7 +119,7 @@ func (dim *Dimension) DistanceSquared(other *Dimension) float64 {
 // Calculates the amount the provided dimension/rect overlaps this rect on
 // the left side. It returns 0 if there is no overlap. For its right side,
 // should be within epsilon distance of this ones left side.
-func (dim *Dimension) IntersectLeft(other *Dimension, epsilon float64) Extent {
+func (dim *AlignedBox) IntersectLeft(other *AlignedBox, epsilon float64) Extent {
 	leftDist := other.Right() - dim.Left()
 	if leftDist > epsilon || leftDist < -epsilon {
 		return Extent{
@@ -138,6 +138,6 @@ func (dim *Dimension) IntersectLeft(other *Dimension, epsilon float64) Extent {
 // Calculates the amount the provided dimension/rect overlaps this rect on
 // the left side. It returns 0 if there is no overlap. For its right side,
 // should be within epsilon distance of this ones left side.
-func (dim *Dimension) IntersectRight(other *Dimension, epsilon float64) Extent {
+func (dim *AlignedBox) IntersectRight(other *AlignedBox, epsilon float64) Extent {
 	return other.IntersectLeft(dim, epsilon)
 }

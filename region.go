@@ -4,13 +4,13 @@ package hambidgetree
 // a space defined by the dimension property. It also contains information about
 // how each dimension of the space relates to the ratio array.
 type Region struct {
-	dimension    *Dimension
+	dimension    *AlignedBox
 	ratioIndexXY int
 	ratioIndexZY int
 }
 
 // Creates a new region.
-func NewRegion(dimension *Dimension, ratioIndexXY, ratioIndexZY int) *Region {
+func NewRegion(dimension *AlignedBox, ratioIndexXY, ratioIndexZY int) *Region {
 	return &Region{
 		dimension:    dimension,
 		ratioIndexXY: ratioIndexXY,
@@ -19,7 +19,7 @@ func NewRegion(dimension *Dimension, ratioIndexXY, ratioIndexZY int) *Region {
 }
 
 // Returns the dimensions of the region
-func (region *Region) Dimension() *Dimension {
+func (region *Region) AlignedBox() *AlignedBox {
 	return region.dimension
 }
 
@@ -47,7 +47,7 @@ type NodeRegion interface {
 func SplitRegionHorizontal(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
 	epsilon := 0.0000001
 
-	dimension := region.Dimension()
+	dimension := region.AlignedBox()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
 
@@ -87,7 +87,7 @@ func SplitRegionHorizontal(ratios Ratios, region *Region, leftIndex, rightIndex 
 }
 
 func SplitRegionVertical(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
-	dimension := region.Dimension()
+	dimension := region.AlignedBox()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
 
@@ -110,7 +110,7 @@ func SplitRegionVertical(ratios Ratios, region *Region, leftIndex, rightIndex in
 }
 
 func SplitRegionDepth(ratios Ratios, region *Region, leftIndex, rightIndex int) (left, right *Region) {
-	dimension := region.Dimension()
+	dimension := region.AlignedBox()
 	ratioIndexXY := region.RatioIndexXY()
 	ratioIndexZY := region.RatioIndexZY()
 	//fmt.Println("splitting depth")
@@ -171,7 +171,7 @@ func NewRegionIterator(tree Tree, offset *Vector, scale float64) *RegionIterator
 	region := &nodeRatioRegion{
 		root,
 		NewRegion(
-			NewDimension3DV(offset, offset.Add(max)),
+			NewAlignedBox3DV(offset, offset.Add(max)),
 			ratioIndexXY,
 			ratioIndexZY,
 		),

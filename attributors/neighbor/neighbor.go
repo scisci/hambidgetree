@@ -33,7 +33,6 @@ func (attributor *HasNeighborAttributor) AddAttributes(tree htree.Tree, attrs *a
 
 	// Get the dimension list
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
-	//nodeDimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 
 	// Naive approach, just compare each leaf to each other leaf, could do better
 	// with some sorting

@@ -229,18 +229,6 @@ func (gen *RandomBasicTreeGenerator) Generate() (htree.Tree, error) {
 			break
 		}
 
-		//it := htree.NewDimensionalIterator(tree, htree.Origin, htree.UnityScale) // NewDimensionalIteratorFromLeaves(leafDims)
-
-		/*
-			leafDims = leafDims[:0]
-			for it.HasNext() {
-				dimNode := it.Next()
-				if dimNode.IsLeaf() {
-					leafDims = append(leafDims, dimNode)
-				}
-			}
-		*/
-
 		// Collect all splittable leaves
 		var filteredLeaves []*leafSplits
 

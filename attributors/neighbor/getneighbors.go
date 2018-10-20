@@ -8,13 +8,13 @@ func getNeighbors(leaves []htree.Node, regionMap htree.RegionMap, epsilon float6
 	var candidates []htree.Node
 	for i := 0; i < len(leaves); i++ {
 		hasNeighbor := false
-		dim := regionMap[leaves[i].ID()].Dimension()
+		dim := regionMap[leaves[i].ID()].AlignedBox()
 
 		for j := 0; j < len(leaves); j++ {
 			if j == i {
 				continue
 			}
-			dim2 := regionMap[leaves[j].ID()].Dimension()
+			dim2 := regionMap[leaves[j].ID()].AlignedBox()
 
 			leftExtent := dim.IntersectLeft(dim2, epsilon)
 			rightExtent := dim.IntersectRight(dim2, epsilon)

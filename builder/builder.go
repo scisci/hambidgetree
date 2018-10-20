@@ -80,7 +80,7 @@ func New(ratioSource htree.RatioSource, ratioIndexXY int, ratioIndexZY int) *Tre
 
 	root := &dNode{
 		id: idgen.Next(),
-		region: htree.NewRegion(htree.NewDimension3DV(
+		region: htree.NewRegion(htree.NewAlignedBox3DV(
 			offset,
 			offset.Add(max)),
 			ratioIndexXY,

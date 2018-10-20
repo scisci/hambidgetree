@@ -53,20 +53,20 @@ func (name EdgeName) Index() int64 {
 }
 
 // TODO: These won't be right for trees created with different aspect ratios!
-func (name EdgeName) Dimension3D() *htree.Dimension {
+func (name EdgeName) AlignedBox3D() *htree.AlignedBox {
 	switch name {
 	case EdgeNameLeft:
-		return htree.NewDimension3D(0, 0, 0, 0, 1, 1)
+		return htree.NewAlignedBox3D(0, 0, 0, 0, 1, 1)
 	case EdgeNameRight:
-		return htree.NewDimension3D(1, 0, 0, 1, 1, 1)
+		return htree.NewAlignedBox3D(1, 0, 0, 1, 1, 1)
 	case EdgeNameTop:
-		return htree.NewDimension3D(0, 0, 0, 1, 0, 1)
+		return htree.NewAlignedBox3D(0, 0, 0, 1, 0, 1)
 	case EdgeNameBottom:
-		return htree.NewDimension3D(0, 1, 0, 1, 1, 1)
+		return htree.NewAlignedBox3D(0, 1, 0, 1, 1, 1)
 	case EdgeNameFront:
-		return htree.NewDimension3D(0, 0, 0, 1, 1, 0)
+		return htree.NewAlignedBox3D(0, 0, 0, 1, 1, 0)
 	case EdgeNameBack:
-		return htree.NewDimension3D(0, 0, 1, 1, 1, 1)
+		return htree.NewAlignedBox3D(0, 0, 1, 1, 1, 1)
 	}
 
 	panic("unknown edge name!")
@@ -81,18 +81,18 @@ type EdgePath struct {
 type edgeNode struct {
 	name      EdgeName
 	id        int64
-	dim       *htree.Dimension
+	dim       *htree.AlignedBox
 	neighbors []htree.NodeID
 }
 
 func createEdgeNodes(idOffset int64) []*edgeNode {
 	return []*edgeNode{
-		&edgeNode{EdgeNameLeft, idOffset + EdgeNameLeft.Index(), EdgeNameLeft.Dimension3D(), nil},
-		&edgeNode{EdgeNameRight, idOffset + EdgeNameRight.Index(), EdgeNameRight.Dimension3D(), nil},
-		&edgeNode{EdgeNameTop, idOffset + EdgeNameTop.Index(), EdgeNameTop.Dimension3D(), nil},
-		&edgeNode{EdgeNameBottom, idOffset + EdgeNameBottom.Index(), EdgeNameBottom.Dimension3D(), nil},
-		&edgeNode{EdgeNameFront, idOffset + EdgeNameFront.Index(), EdgeNameFront.Dimension3D(), nil},
-		&edgeNode{EdgeNameBack, idOffset + EdgeNameBack.Index(), EdgeNameBack.Dimension3D(), nil},
+		&edgeNode{EdgeNameLeft, idOffset + EdgeNameLeft.Index(), EdgeNameLeft.AlignedBox3D(), nil},
+		&edgeNode{EdgeNameRight, idOffset + EdgeNameRight.Index(), EdgeNameRight.AlignedBox3D(), nil},
+		&edgeNode{EdgeNameTop, idOffset + EdgeNameTop.Index(), EdgeNameTop.AlignedBox3D(), nil},
+		&edgeNode{EdgeNameBottom, idOffset + EdgeNameBottom.Index(), EdgeNameBottom.AlignedBox3D(), nil},
+		&edgeNode{EdgeNameFront, idOffset + EdgeNameFront.Index(), EdgeNameFront.AlignedBox3D(), nil},
+		&edgeNode{EdgeNameBack, idOffset + EdgeNameBack.Index(), EdgeNameBack.AlignedBox3D(), nil},
 	}
 }
 
@@ -139,7 +139,6 @@ func (attributor *EdgePathAttributor) AddAttributes(tree htree.Tree, attrs *attr
 	//epsilon := 0.0000001
 
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
-	//dimensionLookup := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
 	matrix := algo.BuildAdjacencyMatrix(tree, regionMap)
 
 	numLeaves := len(matrix)
@@ -174,7 +173,7 @@ func (attributor *EdgePathAttributor) AddAttributes(tree htree.Tree, attrs *attr
 		}
 
 		// Also need to check this neighbor against the edges
-		dim := regionMap[leafID].Dimension()
+		dim := regionMap[leafID].AlignedBox()
 
 		for _, e := range edges {
 			if e.dim.DistanceSquared(dim) < 0.0000001 {

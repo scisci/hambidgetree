@@ -4,44 +4,44 @@ import "testing"
 import "math"
 
 var intersectionTests = []struct {
-	d1                *Dimension
-	d2                *Dimension
+	d1                *AlignedBox
+	d2                *AlignedBox
 	leftIntersection  Extent
 	rightIntersection Extent
 }{
 	{ // First block to the left of second block, same height
-		NewDimension2D(0, 0, 100, 100),
-		NewDimension2D(100, 0, 200, 100),
+		NewAlignedBox2D(0, 0, 100, 100),
+		NewAlignedBox2D(100, 0, 200, 100),
 		NewExtent(0, 0),
 		NewExtent(0, 100),
 	},
 	{ // First block to the right of second block, same height
-		NewDimension2D(100, 0, 200, 100),
-		NewDimension2D(0, 0, 100, 100),
+		NewAlignedBox2D(100, 0, 200, 100),
+		NewAlignedBox2D(0, 0, 100, 100),
 		NewExtent(0, 100),
 		NewExtent(0, 0),
 	},
 	{ // First block to the left and shifted up from second block
-		NewDimension2D(0, -50, 100, 50),
-		NewDimension2D(100, 0, 200, 100),
+		NewAlignedBox2D(0, -50, 100, 50),
+		NewAlignedBox2D(100, 0, 200, 100),
 		NewExtent(-50, -50),
 		NewExtent(0, 50),
 	},
 	{ // First block to the left and shifted down from second block
-		NewDimension2D(0, 50, 100, 150),
-		NewDimension2D(100, 0, 200, 100),
+		NewAlignedBox2D(0, 50, 100, 150),
+		NewAlignedBox2D(100, 0, 200, 100),
 		NewExtent(50, 50),
 		NewExtent(50, 100),
 	},
 	{ // First block to the left but further than epsilon
-		NewDimension2D(0, 0, 50, 100),
-		NewDimension2D(100, 0, 200, 100),
+		NewAlignedBox2D(0, 0, 50, 100),
+		NewAlignedBox2D(100, 0, 200, 100),
 		NewExtent(0, 0),
 		NewExtent(0, 0),
 	},
 	{ // First block to the right of second block but further than epsilon, same height
-		NewDimension2D(110, 0, 200, 100),
-		NewDimension2D(0, 0, 100, 100),
+		NewAlignedBox2D(110, 0, 200, 100),
+		NewAlignedBox2D(0, 0, 100, 100),
 		NewExtent(0, 0),
 		NewExtent(0, 0),
 	},
@@ -61,7 +61,7 @@ func TestIntersect(t *testing.T) {
 }
 
 func TestInset(t *testing.T) {
-	dim := NewDimension3D(0, 0, 0, 20, 20, 20)
+	dim := NewAlignedBox3D(0, 0, 0, 20, 20, 20)
 	dim1 := dim.Inset(AxisX, 5)
 	dim2 := dim.Inset(AxisX, -5)
 	dim3 := dim.Inset(AxisY, 5)
@@ -112,43 +112,43 @@ func TestInset(t *testing.T) {
 	}
 }
 
-var aabb3d1 = NewDimension3D(-10, -10, -10, 10, 10, 10)
+var aabb3d1 = NewAlignedBox3D(-10, -10, -10, 10, 10, 10)
 
 // 2 instersects with 1
-var aabb3d2 = NewDimension3D(-5, 4, -30, -2, 20, 30)
+var aabb3d2 = NewAlignedBox3D(-5, 4, -30, -2, 20, 30)
 
 // 3 contains 1
-var aabb3d3 = NewDimension3D(-25, -25, -25, 25, 25, 25)
+var aabb3d3 = NewAlignedBox3D(-25, -25, -25, 25, 25, 25)
 
 // 4 does not intersect with 1
-var aabb3d4 = NewDimension3D(-40, -40, -40, -15, -25, -12)
+var aabb3d4 = NewAlignedBox3D(-40, -40, -40, -15, -25, -12)
 
 // Barely intersects with 1
-var aabb3d5 = NewDimension3D(10, 10, 10, 20, 20, 20)
+var aabb3d5 = NewAlignedBox3D(10, 10, 10, 20, 20, 20)
 
 // 1 in each direction
-var aabb3d6 = NewDimension3D(11, 11, 11, 20, 20, 20)
+var aabb3d6 = NewAlignedBox3D(11, 11, 11, 20, 20, 20)
 
-var aabb2d1 = NewDimension2D(-10, -10, 10, 10)
+var aabb2d1 = NewAlignedBox2D(-10, -10, 10, 10)
 
 // 2 instersects with 1
-var aabb2d2 = NewDimension2D(-5, 4, -2, 20)
+var aabb2d2 = NewAlignedBox2D(-5, 4, -2, 20)
 
 // 3 contains 1
-var aabb2d3 = NewDimension2D(-25, -25, 25, 25)
+var aabb2d3 = NewAlignedBox2D(-25, -25, 25, 25)
 
 // 4 does not intersect with 1
-var aabb2d4 = NewDimension2D(-40, -40, -15, -25)
+var aabb2d4 = NewAlignedBox2D(-40, -40, -15, -25)
 
 // Barely intersects with 1
-var aabb2d5 = NewDimension2D(10, 10, 20, 20)
+var aabb2d5 = NewAlignedBox2D(10, 10, 20, 20)
 
 // 1 in each direction
-var aabb2d6 = NewDimension2D(11, 11, 20, 20)
+var aabb2d6 = NewAlignedBox2D(11, 11, 20, 20)
 
 var distanceTests = []struct {
-	d1              *Dimension
-	d2              *Dimension
+	d1              *AlignedBox
+	d2              *AlignedBox
 	distanceSquared float64
 }{
 	{ // Intersects

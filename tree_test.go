@@ -12,7 +12,7 @@ func TestTreeGrid2D(t *testing.T) {
 	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
-	baseDim := regionMap[tree.Root().ID()].Dimension()
+	baseDim := regionMap[tree.Root().ID()].AlignedBox()
 	if baseDim.Width() != 1.0 {
 		t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 	}
@@ -22,7 +22,7 @@ func TestTreeGrid2D(t *testing.T) {
 	}
 
 	for _, leaf := range leaves {
-		dim := regionMap[leaf.ID()].Dimension()
+		dim := regionMap[leaf.ID()].AlignedBox()
 		if dim.Width() != 0.25 {
 			t.Errorf("Tree cell width should be 0.25, got %f", dim.Width())
 		}
@@ -73,7 +73,7 @@ func TestTreeGrid3D(t *testing.T) {
 		leaves := algo.FindLeaves(tree)
 		regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
-		baseDim := regionMap[tree.Root().ID()].Dimension()
+		baseDim := regionMap[tree.Root().ID()].AlignedBox()
 		if baseDim.Width() != 1.0 {
 			t.Errorf("Tree should have width 1, got %f", baseDim.Width())
 		}
@@ -87,7 +87,7 @@ func TestTreeGrid3D(t *testing.T) {
 		}
 
 		for _, leaf := range leaves {
-			dim := regionMap[leaf.ID()].Dimension()
+			dim := regionMap[leaf.ID()].AlignedBox()
 			if dim.Width() != test.width {
 				t.Errorf("Tree cell width should be %f got %f", test.width, dim.Width())
 			}

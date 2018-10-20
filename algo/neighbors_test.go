@@ -51,13 +51,10 @@ func TestNeighbors3DMeasured(t *testing.T) {
 	leaves := algo.FindLeaves(tree)
 	regionMap := htree.NewTreeRegionMap(tree, htree.Origin, htree.UnityScale)
 
-	//dimMap := htree.NewNodeDimensionMap(tree, htree.Origin, htree.UnityScale)
-	//leaves := tree.Leaves()
-
 	for _, leaf := range leaves {
 		neighbors := algo.FindNeighbors(tree, leaf, regionMap)
 
-		dim := regionMap[leaf.ID()].Dimension()
+		dim := regionMap[leaf.ID()].AlignedBox()
 
 		// Make sure that each leaf that is not in neighbors is actually not a
 		// neighbor.
@@ -74,7 +71,7 @@ func TestNeighbors3DMeasured(t *testing.T) {
 				}
 			}
 
-			otherDim := regionMap[other.ID()].Dimension()
+			otherDim := regionMap[other.ID()].AlignedBox()
 			isCalcNeighbor := dim.DistanceSquared(otherDim) < 0.0000001
 			if isCalcNeighbor != isNeighbor {
 				t.Errorf("Neighbor incorrect, expected %t, got %t", isNeighbor, isCalcNeighbor)
