@@ -6,7 +6,7 @@ import (
 
 func FindLeaves(tree htree.Tree) []htree.Node {
 	var leaves []htree.Node
-	it := NewNodeIterator(tree.Root())
+	it := htree.NewNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
 		if node.Branch() == nil {

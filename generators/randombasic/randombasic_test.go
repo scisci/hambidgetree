@@ -29,7 +29,7 @@ func TestGenerator2D(t *testing.T) {
 	}
 
 	fmt.Println("Test2D")
-	it := algo.NewNodeIterator(tree.Root())
+	it := htree.NewNodeIterator(tree.Root())
 	for it.HasNext() {
 		node := it.Next()
 		fmt.Printf("Node{%d, %v}\n", node.ID(), node.Branch())

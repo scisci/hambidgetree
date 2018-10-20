@@ -1,5 +1,7 @@
 package hambidgetree
 
+const UnityScale = 1.0
+
 var Origin = &Vector{0.0, 0.0, 0.0}
 
 type Vector struct {

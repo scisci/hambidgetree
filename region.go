@@ -1,20 +1,15 @@
 package hambidgetree
 
-import (
-	"errors"
-	"fmt"
-)
-
-var ErrNotFound = errors.New("Not Found")
-
-const UnityScale = 1.0
-
+// A region represents a node of a tree in actual units. A region specifies
+// a space defined by the dimension property. It also contains information about
+// how each dimension of the space relates to the ratio array.
 type Region struct {
 	dimension    *Dimension
 	ratioIndexXY int
 	ratioIndexZY int
 }
 
+// Creates a new region.
 func NewRegion(dimension *Dimension, ratioIndexXY, ratioIndexZY int) *Region {
 	return &Region{
 		dimension:    dimension,
@@ -23,18 +18,26 @@ func NewRegion(dimension *Dimension, ratioIndexXY, ratioIndexZY int) *Region {
 	}
 }
 
+// Returns the dimensions of the region
 func (region *Region) Dimension() *Dimension {
 	return region.dimension
 }
 
+// Returns the ratio index used to create the xy dimensions of the region
 func (region *Region) RatioIndexXY() int {
 	return region.ratioIndexXY
 }
 
+// Returns the ratio index used to create the zy dimension of the region
 func (region *Region) RatioIndexZY() int {
 	return region.ratioIndexZY
 }
 
+// A mapping from node id to region.
+type RegionMap map[NodeID]*Region
+
+// An object which maintains the association between a node and a region,
+// useful for iterating a tree in space.
 type NodeRegion interface {
 	Region() *Region
 	Node() Node
@@ -61,14 +64,13 @@ func SplitRegionHorizontal(ratios Ratios, region *Region, leftIndex, rightIndex 
 		leftRatioIndexZY = FindClosestIndexWithinRange(ratios, leftRatio, epsilon)
 		rightRatioIndexZY = FindClosestIndexWithinRange(ratios, rightRatio, epsilon)
 		if leftRatioIndexZY < 0 || rightRatioIndexZY < 0 {
-			fmt.Printf("Failed to split horizontal container:%f, left:%f, right:%f\n", zyRatio, leftRatio, rightRatio)
-			fmt.Printf("Got %d, %d in %v \n", leftRatioIndexZY, rightRatioIndexZY, ratios)
+			//fmt.Printf("Failed to split horizontal container:%f, left:%f, right:%f\n", zyRatio, leftRatio, rightRatio)
+			//fmt.Printf("Got %d, %d in %v \n", leftRatioIndexZY, rightRatioIndexZY, ratios)
 			panic("ZY Ratio is not one of the supported ratios!")
 		}
 	}
 
 	// Find the right ratio index
-
 	right = NewRegion(
 		dimension.Inset(AxisY, dimension.Height()*leftHeightParam),
 		rightIndex,
@@ -229,12 +231,15 @@ func (it *RegionIterator) Next() NodeRegion {
 	return node
 }
 
-func NewTreeRegionMap(tree Tree, offset *Vector, scale float64) RegionMap {
+func NewRegionMap(it *RegionIterator) RegionMap {
 	lookup := make(map[NodeID]*Region)
-	it := NewRegionIterator(tree, offset, scale)
 	for it.HasNext() {
 		region := it.Next()
 		lookup[region.Node().ID()] = region.Region()
 	}
 	return lookup
+}
+
+func NewTreeRegionMap(tree Tree, offset *Vector, scale float64) RegionMap {
+	return NewRegionMap(NewRegionIterator(tree, offset, scale))
 }
